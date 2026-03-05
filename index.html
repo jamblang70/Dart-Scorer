@@ -46,7 +46,12 @@
       const [players, setPlayers] = useState([]);
       const [newPlayerName, setNewPlayerName] = useState('');
       const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-      const [currentScoreInput, setCurrentScoreInput] = useState('');
+      
+      // State baru untuk 3 dart terpisah
+      const [dart1, setDart1] = useState('');
+      const [dart2, setDart2] = useState('');
+      const [dart3, setDart3] = useState('');
+      
       const [winner, setWinner] = useState(null);
       const [errorMsg, setErrorMsg] = useState('');
 
@@ -84,22 +89,28 @@
         setCurrentPlayerIndex(0);
         setGameState('playing');
         setWinner(null);
-        setCurrentScoreInput('');
+        setDart1('');
+        setDart2('');
+        setDart3('');
       };
 
       const handleScoreSubmit = (e) => {
         e.preventDefault();
         setErrorMsg('');
         
-        const points = parseInt(currentScoreInput);
-        
-        if (isNaN(points)) {
-          setErrorMsg('Masukkan angka yang valid!');
+        const d1 = parseInt(dart1) || 0;
+        const d2 = parseInt(dart2) || 0;
+        const d3 = parseInt(dart3) || 0;
+
+        if (dart1 === '' && dart2 === '' && dart3 === '') {
+          setErrorMsg('Masukkan minimal 1 skor dart!');
           return;
         }
+
+        const points = d1 + d2 + d3;
         
         if (points < 0 || points > 180) {
-          setErrorMsg('Skor per giliran maksimal 180 dan minimal 0.');
+          setErrorMsg('Total skor per giliran maksimal 180 dan minimal 0.');
           return;
         }
 
@@ -128,7 +139,9 @@
         }
 
         setPlayers(updatedPlayers);
-        setCurrentScoreInput('');
+        setDart1('');
+        setDart2('');
+        setDart3('');
 
         if (newScore === 0) {
           setWinner(currentPlayer);
@@ -139,7 +152,20 @@
       };
 
       const handleQuickScore = (val) => {
-        setCurrentScoreInput(val.toString());
+        if (val === 180) {
+          setDart1('60');
+          setDart2('60');
+          setDart3('60');
+        } else if (val === 0) {
+          setDart1('0');
+          setDart2('0');
+          setDart3('0');
+        } else {
+          // Jika pakai tombol cepat total, masukkan ke dart 1 dan kosongkan sisanya
+          setDart1(val.toString());
+          setDart2('');
+          setDart3('');
+        }
       };
 
       const resetGame = () => {
@@ -154,8 +180,13 @@
         setCurrentPlayerIndex(0);
         setGameState('playing');
         setWinner(null);
-        setCurrentScoreInput('');
+        setDart1('');
+        setDart2('');
+        setDart3('');
       };
+
+      // Hitung total poin secara real-time untuk ditampilkan
+      const currentTotal = (parseInt(dart1) || 0) + (parseInt(dart2) || 0) + (parseInt(dart3) || 0);
 
       return (
         <div className="min-h-screen p-4 md:p-8">
@@ -259,18 +290,43 @@
                   </h3>
                   
                   <form onSubmit={handleScoreSubmit} className="flex flex-col flex-1">
-                    <label className="text-sm font-medium text-slate-500 mb-1">Skor yang didapat (3 Dart):</label>
-                    <input
-                      ref={inputRef}
-                      type="number"
-                      min="0"
-                      max="180"
-                      value={currentScoreInput}
-                      onChange={(e) => setCurrentScoreInput(e.target.value)}
-                      className="w-full text-center text-5xl font-bold py-6 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 mb-4 transition-all"
-                      placeholder="0"
-                      autoFocus
-                    />
+                    <label className="text-sm font-medium text-slate-500 mb-2">Masukkan Skor Tiap Dart (1-3):</label>
+                    
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        ref={inputRef}
+                        type="number"
+                        min="0"
+                        max="180"
+                        value={dart1}
+                        onChange={(e) => setDart1(e.target.value)}
+                        className="w-1/3 text-center text-2xl md:text-3xl font-bold py-4 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
+                        placeholder="D1"
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        max="180"
+                        value={dart2}
+                        onChange={(e) => setDart2(e.target.value)}
+                        className="w-1/3 text-center text-2xl md:text-3xl font-bold py-4 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
+                        placeholder="D2"
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        max="180"
+                        value={dart3}
+                        onChange={(e) => setDart3(e.target.value)}
+                        className="w-1/3 text-center text-2xl md:text-3xl font-bold py-4 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
+                        placeholder="D3"
+                      />
+                    </div>
+                    
+                    <div className="text-center bg-slate-50 rounded-lg py-3 mb-4 border border-slate-200 flex items-center justify-center">
+                      <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Lemparan: </span>
+                      <span className="text-3xl font-black text-blue-600 ml-2">{currentTotal}</span>
+                    </div>
                     
                     <div className="grid grid-cols-4 gap-2 mb-6">
                       {[26, 41, 45, 60, 81, 85, 100, 140].map(val => (
