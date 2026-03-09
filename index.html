@@ -7,139 +7,103 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* ── DARK MODE (default) ── */
+    /* ── DARK (default) ── */
     :root {
-      --bg: #0e0f13;
-      --surface: #16181f;
-      --surface2: #1e2029;
-      --border: #2a2d3a;
-      --accent: #e53935;
-      --accent-text: #ffffff;
-      --accent2: #ff6b6b;
-      --green: #2ed573;
-      --text: #f0f2ff;
-      --muted: #6b7080;
-      --shadow: rgba(229,57,53,0.15);
-      --grad1: rgba(229,57,53,0.05);
-      --grad2: rgba(255,107,107,0.04);
+      --bg:#0e0f13; --surface:#16181f; --surface2:#1e2029; --border:#2a2d3a;
+      --accent:#e53935; --acctxt:#ffffff; --red2:#ff6b6b;
+      --green:#2ed573; --text:#f0f2ff; --muted:#6b7080;
+      --shadow:rgba(229,57,53,0.15);
     }
-    /* ── LIGHT MODE ── */
+    /* ── LIGHT ── */
     body.light {
-      --bg: #f5f5f5;
-      --surface: #ffffff;
-      --surface2: #f0f0f0;
-      --border: #e0e0e0;
-      --accent: #e53935;
-      --accent-text: #ffffff;
-      --accent2: #c62828;
-      --green: #2e7d32;
-      --text: #1a1a1a;
-      --muted: #757575;
-      --shadow: rgba(229,57,53,0.12);
-      --grad1: rgba(229,57,53,0.04);
-      --grad2: rgba(198,40,40,0.03);
+      --bg:#f4f4f4; --surface:#ffffff; --surface2:#ebebeb; --border:#d8d8d8;
+      --accent:#e53935; --acctxt:#ffffff; --red2:#c62828;
+      --green:#2e7d32; --text:#1a1a1a; --muted:#757575;
+      --shadow:rgba(229,57,53,0.12);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-      transition: background 0.3s, color 0.3s;
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      background:var(--bg);color:var(--text);
+      font-family:'DM Sans',sans-serif;min-height:100vh;
+      transition:background .3s,color .3s;
       background-image:
-        radial-gradient(ellipse at 20% 50%, var(--grad1) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 10%, var(--grad2) 0%, transparent 50%);
+        radial-gradient(ellipse at 20% 50%,rgba(229,57,53,.05) 0%,transparent 60%),
+        radial-gradient(ellipse at 80% 10%,rgba(229,57,53,.03) 0%,transparent 50%);
     }
-    .font-display { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
-
-    @keyframes fadeIn  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes bust    { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
-    @keyframes scoreIn { 0%{transform:scale(0.8);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
-    @keyframes winPop  { 0%{transform:scale(0.4) rotate(-6deg);opacity:0} 70%{transform:scale(1.06) rotate(1deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
-    @keyframes fall    { to{transform:translateY(110vh) rotate(720deg);opacity:0} }
-
-    .anim-fade   { animation: fadeIn  0.35s ease forwards; }
-    .anim-bust   { animation: bust    0.4s  ease; }
-    .anim-score  { animation: scoreIn 0.28s ease forwards; }
-    .anim-win    { animation: winPop  0.55s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-
+    .fd{font-family:'Bebas Neue',sans-serif;letter-spacing:.05em}
+    @keyframes fadeIn {from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes bust   {0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+    @keyframes popIn  {0%{transform:scale(.4) rotate(-5deg);opacity:0}70%{transform:scale(1.05) rotate(1deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+    @keyframes fall   {to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+    .af{animation:fadeIn .35s ease forwards}
+    .ab{animation:bust .4s ease}
+    .ap{animation:popIn .55s cubic-bezier(.34,1.56,.64,1) forwards}
     input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; }
-    input[type=number] { -moz-appearance:textfield; }
-
-    ::-webkit-scrollbar { width:4px; }
-    ::-webkit-scrollbar-track { background:var(--surface); }
-    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-
-    .card-active {
-      border-color: var(--accent) !important;
-      box-shadow: 0 0 0 1px var(--accent), 0 8px 32px var(--shadow);
-    }
-    .leg-pip { width:9px; height:9px; border-radius:50%; background:var(--border); display:inline-block; transition:background 0.2s; }
-    .leg-pip.won { background:var(--accent); }
-    .confetti-piece { position:fixed; top:-12px; animation:fall linear forwards; }
-
-    button { transition: opacity 0.15s, transform 0.1s; }
-    button:hover:not(:disabled) { opacity:0.82; }
-    button:active:not(:disabled) { transform:scale(0.97); }
-
-    .theme-toggle {
-      padding: 7px 13px; border-radius:9px; border:1px solid var(--border);
-      background:var(--surface); color:var(--text); cursor:pointer;
-      font-size:13px; font-weight:600;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+    input[type=number]{-moz-appearance:textfield}
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-track{background:var(--surface)}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    .card-on{border-color:var(--accent)!important;box-shadow:0 0 0 1px var(--accent),0 8px 32px var(--shadow)}
+    .pip{width:9px;height:9px;border-radius:50%;background:var(--border);display:inline-block;transition:background .2s}
+    .pip.on{background:var(--accent)}
+    .cfetti{position:fixed;top:-12px;animation:fall linear forwards}
+    button{transition:opacity .15s,transform .1s;cursor:pointer}
+    button:hover:not(:disabled){opacity:.82}
+    button:active:not(:disabled){transform:scale(.97)}
+    .tbtn{
+      padding:7px 13px;border-radius:9px;border:1px solid var(--border);
+      background:var(--surface);color:var(--text);font-size:13px;font-weight:600;
+      transition:background .2s,color .2s,border-color .2s;
     }
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useRef } = React;
+const {useState,useEffect,useRef} = React;
 
-// ─── CHECKOUT TABLE ───────────────────────────────────────────────────────────
-const CHECKOUTS = {
+/* ── CHECKOUT TABLE ─────────────────────────────────────────── */
+const CO = {
   170:"T20 T20 Bull",167:"T20 T19 Bull",164:"T20 T18 Bull",161:"T20 T17 Bull",
-  160:"T20 T20 D20", 158:"T20 T20 D19",157:"T19 T20 Bull",156:"T20 T20 D18",
-  155:"T20 T19 D19", 154:"T20 T18 Bull",153:"T20 T19 D18",152:"T20 T20 D16",
+  160:"T20 T20 D20",158:"T20 T20 D19",157:"T19 T20 Bull",156:"T20 T20 D18",
+  155:"T20 T19 D19",154:"T20 T18 Bull",153:"T20 T19 D18",152:"T20 T20 D16",
   151:"T20 T17 Bull",150:"T20 T18 D18",149:"T20 T19 D16",148:"T20 T16 Bull",
-  147:"T20 T17 D18", 146:"T20 T18 D16",145:"T20 T15 Bull",144:"T20 T20 D12",
-  143:"T20 T17 D16", 142:"T20 T14 Bull",141:"T20 T15 D18",140:"T20 T20 D10",
+  147:"T20 T17 D18",146:"T20 T18 D16",145:"T20 T15 Bull",144:"T20 T20 D12",
+  143:"T20 T17 D16",142:"T20 T14 Bull",141:"T20 T15 D18",140:"T20 T20 D10",
   139:"T20 T13 Bull",138:"T20 T18 D12",137:"T20 T15 D16",136:"T20 T20 D8",
-  135:"T20 T17 D12", 134:"T20 T14 D16",133:"T20 T19 D8", 132:"T20 T16 D12",
-  131:"T20 T13 D16", 130:"T20 T18 D8", 129:"T19 T16 D12",128:"T20 T20 D4",
-  127:"T20 T17 D8",  126:"T19 T19 D6", 125:"T20 T15 D10",124:"T20 T16 D8",
-  123:"T19 T16 D9",  122:"T18 T18 D7", 121:"T20 T11 D14",120:"T20 S20 D20",
-  119:"T19 T12 D13", 118:"T20 S18 D20",117:"T20 S17 D20",116:"T20 S16 D20",
-  115:"T19 S18 D20", 114:"T20 S14 D20",113:"T19 S16 D20",112:"T20 S12 D20",
-  111:"T19 S14 D20", 110:"T20 S10 D20",109:"T19 S12 D20",108:"T20 S8 D20",
-  107:"T19 S10 D20", 106:"T20 S6 D20", 105:"T19 S8 D20", 104:"T18 S10 D20",
-  103:"T19 S6 D20",  102:"T20 S2 D20", 101:"T17 S10 D20",100:"T20 D20",
-  99:"T19 D21",      98:"T20 D19",     97:"T19 D20",     96:"T20 D18",
-  95:"T19 D19",      94:"T18 D20",     93:"T19 D18",     92:"T20 D16",
-  91:"T17 D20",      90:"T18 D18",     89:"T19 D16",     88:"T20 D14",
-  87:"T17 D18",      86:"T18 D16",     85:"T15 D20",     84:"T20 D12",
-  83:"T17 D16",      82:"T14 D20",     81:"T19 D12",     80:"T20 D10",
-  79:"T13 D20",      78:"T18 D12",     77:"T15 D16",     76:"T20 D8",
-  75:"T17 D12",      74:"T14 D16",     73:"T19 D8",      72:"T16 D12",
-  71:"T13 D16",      70:"T18 D8",      69:"T19 D6",      68:"T20 D4",
-  67:"T17 D8",       66:"T10 D18",     65:"T19 D4",      64:"T16 D8",
-  63:"T13 D12",      62:"T10 D16",     61:"T15 D8",      60:"S20 D20",
-  59:"S19 D20",      58:"S18 D20",     57:"S17 D20",     56:"S16 D20",
-  55:"S15 D20",      54:"S14 D20",     53:"S13 D20",     52:"S12 D20",
-  51:"S11 D20",      50:"Bull",        49:"S9 D20",      48:"S8 D20",
-  47:"S7 D20",       46:"S6 D20",      45:"S5 D20",      44:"S4 D20",
-  43:"S3 D20",       42:"S2 D20",      41:"S1 D20",      40:"D20",
-  38:"D19",          36:"D18",         34:"D17",         32:"D16",
-  30:"D15",          28:"D14",         26:"D13",         24:"D12",
-  22:"D11",          20:"D10",         18:"D9",          16:"D8",
-  14:"D7",           12:"D6",          10:"D5",          8:"D4",
-  6:"D3",            4:"D2",           2:"D1",
+  135:"T20 T17 D12",134:"T20 T14 D16",133:"T20 T19 D8",132:"T20 T16 D12",
+  131:"T20 T13 D16",130:"T20 T18 D8",129:"T19 T16 D12",128:"T20 T20 D4",
+  127:"T20 T17 D8",126:"T19 T19 D6",125:"T20 T15 D10",124:"T20 T16 D8",
+  123:"T19 T16 D9",122:"T18 T18 D7",121:"T20 T11 D14",120:"T20 S20 D20",
+  119:"T19 T12 D13",118:"T20 S18 D20",117:"T20 S17 D20",116:"T20 S16 D20",
+  115:"T19 S18 D20",114:"T20 S14 D20",113:"T19 S16 D20",112:"T20 S12 D20",
+  111:"T19 S14 D20",110:"T20 S10 D20",109:"T19 S12 D20",108:"T20 S8 D20",
+  107:"T19 S10 D20",106:"T20 S6 D20",105:"T19 S8 D20",104:"T18 S10 D20",
+  103:"T19 S6 D20",102:"T20 S2 D20",101:"T17 S10 D20",100:"T20 D20",
+  99:"T19 D21",98:"T20 D19",97:"T19 D20",96:"T20 D18",
+  95:"T19 D19",94:"T18 D20",93:"T19 D18",92:"T20 D16",
+  91:"T17 D20",90:"T18 D18",89:"T19 D16",88:"T20 D14",
+  87:"T17 D18",86:"T18 D16",85:"T15 D20",84:"T20 D12",
+  83:"T17 D16",82:"T14 D20",81:"T19 D12",80:"T20 D10",
+  79:"T13 D20",78:"T18 D12",77:"T15 D16",76:"T20 D8",
+  75:"T17 D12",74:"T14 D16",73:"T19 D8",72:"T16 D12",
+  71:"T13 D16",70:"T18 D8",69:"T19 D6",68:"T20 D4",
+  67:"T17 D8",66:"T10 D18",65:"T19 D4",64:"T16 D8",
+  63:"T13 D12",62:"T10 D16",61:"T15 D8",60:"S20 D20",
+  59:"S19 D20",58:"S18 D20",57:"S17 D20",56:"S16 D20",
+  55:"S15 D20",54:"S14 D20",53:"S13 D20",52:"S12 D20",
+  51:"S11 D20",50:"Bull",49:"S9 D20",48:"S8 D20",
+  47:"S7 D20",46:"S6 D20",45:"S5 D20",44:"S4 D20",
+  43:"S3 D20",42:"S2 D20",41:"S1 D20",40:"D20",
+  38:"D19",36:"D18",34:"D17",32:"D16",30:"D15",28:"D14",
+  26:"D13",24:"D12",22:"D11",20:"D10",18:"D9",16:"D8",
+  14:"D7",12:"D6",10:"D5",8:"D4",6:"D3",4:"D2",2:"D1",
 };
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────────
+/* ── ICONS & HELPERS ────────────────────────────────────────── */
 const TargetIcon = () => (
   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
@@ -147,447 +111,467 @@ const TargetIcon = () => (
 );
 
 function Confetti() {
-  const colors = ['#e8ff47','#ff4757','#2ed573','#1e90ff','#ffd700','#ff6b81'];
-  const pieces = Array.from({length:55}, (_,i) => ({
+  const colors = ['#e53935','#ff6b6b','#ffd700','#2ed573','#1e90ff','#ff6b81'];
+  const ps = Array.from({length:55},(_,i)=>({
     id:i, left:Math.random()*100,
     delay:Math.random()*1.8, dur:2.2+Math.random()*2,
-    color:colors[i%colors.length], size:5+Math.random()*8,
-    round:Math.random()>0.5,
+    color:colors[i%colors.length], size:5+Math.random()*8, round:Math.random()>.5,
   }));
   return (
     <div style={{position:'fixed',inset:0,pointerEvents:'none',zIndex:999}}>
-      {pieces.map(p=>(
-        <div key={p.id} className="confetti-piece" style={{
-          left:`${p.left}%`, background:p.color,
-          width:p.size, height:p.size,
-          borderRadius: p.round?'50%':'2px',
-          animationDelay:`${p.delay}s`, animationDuration:`${p.dur}s`,
+      {ps.map(p=>(
+        <div key={p.id} className="cfetti" style={{
+          left:`${p.left}%`,background:p.color,
+          width:p.size,height:p.size,
+          borderRadius:p.round?'50%':'2px',
+          animationDelay:`${p.delay}s`,animationDuration:`${p.dur}s`,
         }}/>
       ))}
     </div>
   );
 }
 
-const mkPlayer = (id, name, startScore) => ({
-  id, name, score:startScore, legsWon:0, history:[],
-  stats:{ totalDarts:0, totalPoints:0, busts:0, turns:0 },
+const mkP = (id, name, score) => ({
+  id, name, score, legsWon:0, history:[],
+  stats:{totalDarts:0,totalPoints:0,busts:0,turns:0},
 });
 
-// ─── APP ──────────────────────────────────────────────────────────────────────
+/* ── APP ─────────────────────────────────────────────────────── */
 function App() {
-  const [screen, setScreen]         = useState('setup');
-  const [startScore, setStartScore] = useState(501);
-  const [legsToWin, setLegsToWin]   = useState(1);   // legs needed to win match
-  const [doubleOut, setDoubleOut]   = useState(false);
-  const [players, setPlayers]       = useState([]);
-  const [newName, setNewName]       = useState('');
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [darts, setDarts]           = useState(['','','']);
-  const [undoStack, setUndoStack]   = useState([]);   // snapshots for undo
-  const [error, setError]           = useState('');
-  const [bustAnim, setBustAnim]     = useState(false);
-  const [winner, setWinner]         = useState(null);
-  const [lightMode, setLightMode]   = useState(false);
-  const dart1Ref = useRef(null);
+  const [screen,  setScreen]  = useState('setup');
+  const [start,   setStart]   = useState(501);
+  const [legs,    setLegs]    = useState(1);
+  const [dblOut,  setDblOut]  = useState(false);
+  const [light,   setLight]   = useState(false);
+  const [players, setPlayers] = useState([]);
+  const [name,    setName]    = useState('');
+  const [curIdx,  setCurIdx]  = useState(0);
+  const [darts,   setDarts]   = useState(['','','']);
+  const [undo,    setUndo]    = useState([]);
+  const [err,     setErr]     = useState('');
+  const [bustAnim,setBustAnim]= useState(false);
+  const [winner,  setWinner]  = useState(null);
+  // null | { prevScore, points, updPlayers, wIdx }
+  const [dlg,     setDlg]     = useState(null);
+  const d1Ref = useRef(null);
 
-  useEffect(() => {
-    document.body.classList.toggle('light', lightMode);
-  }, [lightMode]);
+  useEffect(()=>{ document.body.classList.toggle('light',light); },[light]);
+  useEffect(()=>{ if(screen==='playing') setTimeout(()=>d1Ref.current?.focus(),80); },[screen,curIdx]);
 
-  useEffect(() => {
-    if (screen === 'playing') setTimeout(() => dart1Ref.current?.focus(), 80);
-  }, [screen, currentIdx]);
-
-  // ── Setup helpers ────────────────────────────────────────────────────────
-  const addPlayer = (e) => {
+  /* ── Setup ─────────────────────────────────────────────────── */
+  const addPlayer = e => {
     e.preventDefault();
-    if (!newName.trim() || players.length >= 8) return;
-    setPlayers(prev => [...prev, mkPlayer(Date.now(), newName.trim(), startScore)]);
-    setNewName('');
+    if(!name.trim()||players.length>=8) return;
+    setPlayers(p=>[...p, mkP(Date.now(),name.trim(),start)]);
+    setName('');
   };
 
   const startGame = () => {
-    if (!players.length) return;
-    setPlayers(prev => prev.map(p => mkPlayer(p.id, p.name, startScore)));
-    setCurrentIdx(0); setUndoStack([]); setDarts(['','','']);
-    setWinner(null); setError(''); setScreen('playing');
+    if(!players.length) return;
+    setPlayers(ps=>ps.map(p=>mkP(p.id,p.name,start)));
+    setCurIdx(0); setUndo([]); setDarts(['','','']);
+    setWinner(null); setErr(''); setDlg(null); setScreen('playing');
   };
 
-  // ── Bust detection ────────────────────────────────────────────────────────
+  /* ── Bust check ─────────────────────────────────────────────── */
   // newScore < 0  → always bust
-  // newScore == 1 → bust only in Double Out (no D½ exists)
-  // newScore == 0 → win (both modes; Double Out trusts the user hit a double)
-  const isBustScore = (newScore) =>
-    newScore < 0 || (doubleOut && newScore === 1);
+  // newScore == 1 → bust only with Double Out (no D½ exists)
+  const isBust = ns => ns < 0 || (dblOut && ns === 1);
 
-  // ── Score submission ──────────────────────────────────────────────────────
-  const submitScore = (e) => {
+  /* ── Resolve leg win ────────────────────────────────────────── */
+  const resolveWin = (updPs, wIdx) => {
+    const newLegs = (updPs[wIdx].legsWon||0) + 1;
+    const after   = updPs.map((p,i)=> i!==wIdx ? p : {...p,legsWon:newLegs});
+    setPlayers(after);
+    if(newLegs >= legs) {
+      setWinner(after[wIdx]);
+      setScreen('finished');
+    } else {
+      setTimeout(()=>{
+        setPlayers(after.map(p=>({...p,score:start,history:[],
+          stats:{totalDarts:0,totalPoints:0,busts:0,turns:0}})));
+        setUndo([]); setCurIdx(0); setErr('');
+      },400);
+    }
+  };
+
+  /* ── Submit score ───────────────────────────────────────────── */
+  const submit = e => {
     e?.preventDefault();
-    setError('');
+    setErr('');
+    const vals = darts.map(d=>d===''?null:parseInt(d,10));
+    if(vals.every(v=>v===null)){ setErr('Masukkan minimal 1 skor dart!'); return; }
 
-    const vals = darts.map(d => d === '' ? null : parseInt(d, 10));
-    if (vals.every(v => v === null)) { setError('Masukkan minimal 1 skor dart!'); return; }
-
-    // Validate each dart: 0–60 (max single dart = T20 = 60)
-    for (let i = 0; i < 3; i++) {
-      if (vals[i] !== null && (isNaN(vals[i]) || vals[i] < 0 || vals[i] > 60)) {
-        setError(`Dart ${i+1}: nilai harus antara 0–60`); return;
+    // Validate: each dart 0–60 (max = T20 = 60)
+    for(let i=0;i<3;i++){
+      if(vals[i]!==null&&(isNaN(vals[i])||vals[i]<0||vals[i]>60)){
+        setErr(`Dart ${i+1}: nilai harus antara 0–60`); return;
       }
     }
 
-    const points      = vals.reduce((s, v) => s + (v ?? 0), 0);
-    const dartsThrown = vals.filter(v => v !== null).length;
-    const player      = players[currentIdx];
-    const newScore    = player.score - points;
-    const bust        = isBustScore(newScore);
+    const pts   = vals.reduce((s,v)=>s+(v??0),0);
+    const nDart = vals.filter(v=>v!==null).length;
+    const pl    = players[curIdx];
+    const ns    = pl.score - pts;
+    const bust  = isBust(ns);
 
-    // Save full snapshot for undo
-    setUndoStack(prev => [...prev, {
-      playerIdx: currentIdx,
-      snapshot: players.map(p => ({
-        ...p, history:[...p.history], stats:{...p.stats},
-      })),
+    // Save undo snapshot
+    setUndo(prev=>[...prev,{
+      idx:curIdx,
+      snap:players.map(p=>({...p,history:[...p.history],stats:{...p.stats}})),
     }]);
 
-    // Update the current player
-    const updStats = (s) => ({
+    const updStats = (s,busted) => ({
       ...s,
-      totalDarts:  s.totalDarts  + dartsThrown,
-      totalPoints: s.totalPoints + (bust ? 0 : points),
-      busts:       s.busts       + (bust ? 1 : 0),
-      turns:       s.turns       + 1,
+      totalDarts:  s.totalDarts+nDart,
+      totalPoints: s.totalPoints+(busted?0:pts),
+      busts:       s.busts+(busted?1:0),
+      turns:       s.turns+1,
     });
 
-    if (bust) {
-      setBustAnim(true);
-      setTimeout(() => setBustAnim(false), 450);
-      const bustReason = newScore < 0
-        ? 'BUST! Skor melebihi target.'
-        : 'BUST! Sisa 1 tidak bisa di-checkout (Double Out).';
-      setError(bustReason);
-      setPlayers(prev => prev.map((p, i) =>
-        i !== currentIdx ? p : {
-          ...p,
-          history: [...p.history, { points, isBust:true }],
-          stats: updStats(p.stats),
-        }
-      ));
+    if(bust){
+      setBustAnim(true); setTimeout(()=>setBustAnim(false),450);
+      setErr(ns<0 ? 'BUST! Skor melebihi target.'
+                  : 'BUST! Sisa 1 tidak bisa di-checkout (Double Out).');
+      setPlayers(prev=>prev.map((p,i)=>i!==curIdx?p:{
+        ...p,
+        history:[...p.history,{pts,bust:true}],
+        stats:updStats(p.stats,true),
+      }));
       setDarts(['','','']);
-      setCurrentIdx(prev => (prev + 1) % players.length);
+      setCurIdx(prev=>(prev+1)%players.length);
       return;
     }
 
-    // Valid score
-    const updatedPlayers = players.map((p, i) =>
-      i !== currentIdx ? p : {
-        ...p, score: newScore,
-        history: [...p.history, { points, isBust:false }],
-        stats: updStats(p.stats),
-      }
-    );
-    setPlayers(updatedPlayers);
+    // Apply score optimistically
+    const updPs = players.map((p,i)=>i!==curIdx?p:{
+      ...p, score:ns,
+      history:[...p.history,{pts,bust:false}],
+      stats:updStats(p.stats,false),
+    });
+    setPlayers(updPs);
     setDarts(['','','']);
 
-    if (newScore === 0) {
-      // Leg won
-      const newLegsWon = (updatedPlayers[currentIdx].legsWon || 0) + 1;
-      const afterLeg   = updatedPlayers.map((p, i) =>
-        i !== currentIdx ? p : { ...p, legsWon: newLegsWon }
-      );
-      setPlayers(afterLeg);
-
-      if (newLegsWon >= legsToWin) {
-        setWinner(afterLeg[currentIdx]);
-        setScreen('finished');
+    if(ns===0){
+      if(dblOut){
+        // Show confirmation dialog
+        setDlg({prevScore:pl.score, pts, updPs, wIdx:curIdx});
       } else {
-        // Reset scores for next leg, keep leg counts
-        setTimeout(() => {
-          setPlayers(afterLeg.map(p => ({
-            ...p, score:startScore, history:[],
-            stats:{ totalDarts:0, totalPoints:0, busts:0, turns:0 },
-          })));
-          setUndoStack([]); setCurrentIdx(0); setError('');
-        }, 400);
+        resolveWin(updPs, curIdx);
       }
     } else {
-      setCurrentIdx(prev => (prev + 1) % players.length);
+      setCurIdx(prev=>(prev+1)%players.length);
     }
   };
 
-  // ── Undo last turn ────────────────────────────────────────────────────────
-  const undoTurn = () => {
-    if (!undoStack.length) return;
-    const last = undoStack[undoStack.length - 1];
-    setUndoStack(prev => prev.slice(0, -1));
-    setPlayers(last.snapshot);
-    setCurrentIdx(last.playerIdx);
-    setDarts(['','','']); setError('');
+  /* ── Double Out dialog handler ──────────────────────────────── */
+  const handleDlg = isDouble => {
+    const {pts, updPs, wIdx} = dlg;
+    setDlg(null);
+    if(isDouble){
+      resolveWin(updPs, wIdx);
+    } else {
+      // Revert: bust
+      setBustAnim(true); setTimeout(()=>setBustAnim(false),450);
+      setErr('BUST! Dart terakhir bukan double.');
+      setPlayers(prev=>prev.map((p,i)=>i!==wIdx?p:{
+        ...p,
+        score: p.score + pts,   // revert score
+        history:[...p.history.slice(0,-1),{pts,bust:true}],
+        stats:{...p.stats, busts:p.stats.busts+1, totalPoints:p.stats.totalPoints-pts},
+      }));
+      setCurIdx(prev=>(prev+1)%players.length);
+    }
   };
 
-  // ── Quick score buttons ────────────────────────────────────────────────────
-  const quickScore = (v) => {
-    if (v === 0)   setDarts(['0','','']);
-    else if (v === 180) setDarts(['60','60','60']);
-    else           setDarts([String(v),'','']);
-    dart1Ref.current?.focus();
+  /* ── Undo ───────────────────────────────────────────────────── */
+  const doUndo = () => {
+    if(!undo.length) return;
+    const last = undo[undo.length-1];
+    setUndo(prev=>prev.slice(0,-1));
+    setPlayers(last.snap);
+    setCurIdx(last.idx);
+    setDarts(['','','']); setErr(''); setDlg(null);
   };
 
-  const resetGame = () => { setScreen('setup'); setWinner(null); setUndoStack([]); };
+  const quickScore = v => {
+    setDarts(v===0?['0','','']:v===180?['60','60','60']:[String(v),'','']);
+    d1Ref.current?.focus();
+  };
+
+  const resetGame = () => { setScreen('setup'); setWinner(null); setUndo([]); setDlg(null); };
   const rematch   = () => {
-    setPlayers(prev => prev.map(p => mkPlayer(p.id, p.name, startScore)));
-    setCurrentIdx(0); setUndoStack([]); setDarts(['','','']);
-    setWinner(null); setError(''); setScreen('playing');
+    setPlayers(ps=>ps.map(p=>mkP(p.id,p.name,start)));
+    setCurIdx(0); setUndo([]); setDarts(['','','']);
+    setWinner(null); setErr(''); setDlg(null); setScreen('playing');
   };
 
-  const currentPlayer = players[currentIdx];
-  const currentTotal  = darts.reduce((s, d) => s + (parseInt(d) || 0), 0);
-  const remainAfter   = currentPlayer ? currentPlayer.score - currentTotal : 0;
-  const willBust      = currentPlayer && isBustScore(remainAfter) && currentTotal > 0;
-  const willFinish    = currentPlayer && remainAfter === 0 && currentTotal > 0;
-  const checkout      = currentPlayer && currentPlayer.score <= 170
-    ? CHECKOUTS[currentPlayer.score] : null;
+  /* ── Derived ────────────────────────────────────────────────── */
+  const cur      = players[curIdx];
+  const total    = darts.reduce((s,d)=>s+(parseInt(d)||0),0);
+  const remain   = cur ? cur.score - total : 0;
+  const willBust = cur && isBust(remain) && total > 0;
+  const willWin  = cur && remain === 0 && total > 0;
+  const checkout = cur && cur.score<=170 ? CO[cur.score] : null;
 
-  // ─── SETUP SCREEN ──────────────────────────────────────────────────────────
-  if (screen === 'setup') return (
-    <div className="anim-fade" style={{minHeight:'100vh',padding:'24px 16px',maxWidth:680,margin:'0 auto'}}>
+  /* ── Shared button styles ───────────────────────────────────── */
+  const accentBtn = (extra={}) => ({
+    background:'var(--accent)',color:'var(--acctxt)',border:'none',
+    borderRadius:12,padding:'13px',fontFamily:'Bebas Neue',
+    fontSize:22,letterSpacing:'.05em',width:'100%',...extra,
+  });
+
+  /* ════════════════════════════════════════════════════════════ */
+  /* SETUP SCREEN                                                 */
+  /* ════════════════════════════════════════════════════════════ */
+  if(screen==='setup') return (
+    <div className="af" style={{minHeight:'100vh',padding:'24px 16px',maxWidth:680,margin:'0 auto'}}>
+
       {/* Header */}
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:32}}>
         <div style={{display:'flex',alignItems:'center',gap:12}}>
           <span style={{color:'var(--accent)'}}><TargetIcon/></span>
           <div>
-            <h1 className="font-display" style={{fontSize:34,color:'var(--accent)',lineHeight:1}}>DART SCORER</h1>
-            <p style={{fontSize:11,color:'var(--muted)',letterSpacing:'0.12em'}}>PRO EDITION</p>
+            <h1 className="fd" style={{fontSize:34,color:'var(--accent)',lineHeight:1}}>DART SCORER</h1>
+            <p style={{fontSize:11,color:'var(--muted)',letterSpacing:'.12em'}}>PRO EDITION</p>
           </div>
         </div>
-        <button className="theme-toggle" onClick={()=>setLightMode(m=>!m)}>
-          {lightMode ? '🌙 Dark' : '☀️ Light'}
+        <button className="tbtn" onClick={()=>setLight(l=>!l)}>
+          {light?'🌙 Dark':'☀️ Light'}
         </button>
       </div>
 
-      {/* Settings card */}
+      {/* Settings */}
       <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:16,padding:24,marginBottom:14}}>
-        <p style={{fontSize:11,letterSpacing:'0.15em',color:'var(--muted)',textTransform:'uppercase',marginBottom:16}}>Pengaturan Permainan</p>
-
+        <p style={{fontSize:11,letterSpacing:'.15em',color:'var(--muted)',textTransform:'uppercase',marginBottom:16}}>Pengaturan</p>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
-          {/* Start score */}
           <div>
             <p style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>Skor Awal</p>
             <div style={{display:'flex',gap:8}}>
               {[301,501,701].map(s=>(
-                <button key={s} onClick={()=>setStartScore(s)} style={{
-                  flex:1,padding:'10px 0',borderRadius:10,cursor:'pointer',
-                  background:startScore===s?'var(--accent)':'var(--surface2)',
-                  color:startScore===s?'var(--accent-text)':'var(--text)',
-                  border:startScore===s?'none':'1px solid var(--border)',
-                  fontFamily:'Bebas Neue',fontSize:18,transition:'all 0.15s',
+                <button key={s} onClick={()=>setStart(s)} style={{
+                  flex:1,padding:'10px 0',borderRadius:10,
+                  background:start===s?'var(--accent)':'var(--surface2)',
+                  color:start===s?'var(--acctxt)':'var(--text)',
+                  border:start===s?'none':'1px solid var(--border)',
+                  fontFamily:'Bebas Neue',fontSize:18,transition:'all .15s',
                 }}>{s}</button>
               ))}
             </div>
           </div>
-          {/* Legs */}
           <div>
             <p style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>Legs (Best of)</p>
             <div style={{display:'flex',gap:8}}>
               {[1,3,5,7].map(l=>{
-                const needed=Math.ceil(l/2);
+                const need=Math.ceil(l/2);
                 return (
-                  <button key={l} onClick={()=>setLegsToWin(needed)} style={{
-                    flex:1,padding:'10px 0',borderRadius:10,cursor:'pointer',
-                    background:legsToWin===needed?'var(--accent)':'var(--surface2)',
-                    color:legsToWin===needed?'var(--accent-text)':'var(--text)',
-                    border:legsToWin===needed?'none':'1px solid var(--border)',
-                    fontFamily:'Bebas Neue',fontSize:18,transition:'all 0.15s',
+                  <button key={l} onClick={()=>setLegs(need)} style={{
+                    flex:1,padding:'10px 0',borderRadius:10,
+                    background:legs===need?'var(--accent)':'var(--surface2)',
+                    color:legs===need?'var(--acctxt)':'var(--text)',
+                    border:legs===need?'none':'1px solid var(--border)',
+                    fontFamily:'Bebas Neue',fontSize:18,transition:'all .15s',
                   }}>{l}</button>
                 );
               })}
             </div>
           </div>
         </div>
-
-        {/* Double out toggle */}
+        {/* Double Out toggle */}
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:'var(--surface2)',borderRadius:10,padding:'12px 16px'}}>
           <div>
             <p style={{fontSize:14,fontWeight:600}}>Double Out</p>
-            <p style={{fontSize:11,color:'var(--muted)'}}>
-              Sisa 0 = menang &nbsp;|&nbsp; Sisa 1 = Bust (tidak bisa di-checkout)
-            </p>
+            <p style={{fontSize:11,color:'var(--muted)'}}>Sisa 0=menang · Sisa 1=Bust · Dart checkout harus Double</p>
           </div>
-          <button onClick={()=>setDoubleOut(d=>!d)} style={{
-            width:48,height:26,borderRadius:13,border:'none',cursor:'pointer',
-            background:doubleOut?'var(--accent)':'var(--border)',
-            position:'relative',transition:'background 0.2s',flexShrink:0,
+          <button onClick={()=>setDblOut(d=>!d)} style={{
+            width:48,height:26,borderRadius:13,border:'none',flexShrink:0,
+            background:dblOut?'var(--accent)':'var(--border)',
+            position:'relative',transition:'background .2s',
           }}>
             <span style={{
-              position:'absolute',top:3,left:doubleOut?25:3,
+              position:'absolute',top:3,left:dblOut?25:3,
               width:20,height:20,borderRadius:'50%',
-              background:doubleOut?'var(--accent-text)':'var(--muted)',transition:'left 0.2s',
+              background:dblOut?'#fff':'var(--muted)',transition:'left .2s',
             }}/>
           </button>
         </div>
       </div>
 
-      {/* Players card */}
+      {/* Players */}
       <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:16,padding:24}}>
-        <p style={{fontSize:11,letterSpacing:'0.15em',color:'var(--muted)',textTransform:'uppercase',marginBottom:16}}>
-          Pemain ({players.length}/8)
-        </p>
+        <p style={{fontSize:11,letterSpacing:'.15em',color:'var(--muted)',textTransform:'uppercase',marginBottom:16}}>Pemain ({players.length}/8)</p>
         <form onSubmit={addPlayer} style={{display:'flex',gap:10,marginBottom:14}}>
-          <input
-            type="text" placeholder="Nama pemain..." value={newName}
-            onChange={e=>setNewName(e.target.value)}
-            style={{
-              flex:1,background:'var(--surface2)',border:'1px solid var(--border)',
-              borderRadius:10,padding:'10px 14px',color:'var(--text)',fontSize:14,outline:'none',
-            }}
+          <input type="text" placeholder="Nama pemain..." value={name}
+            onChange={e=>setName(e.target.value)}
+            style={{flex:1,background:'var(--surface2)',border:'1px solid var(--border)',
+              borderRadius:10,padding:'10px 14px',color:'var(--text)',fontSize:14,outline:'none'}}
           />
-          <button type="submit" disabled={!newName.trim()||players.length>=8} style={{
-            padding:'10px 20px',borderRadius:10,border:'none',cursor:'pointer',
-            background:'var(--accent)',color:'var(--accent-text)',fontWeight:700,fontSize:14,
-            opacity:(!newName.trim()||players.length>=8)?0.4:1,
+          <button type="submit" disabled={!name.trim()||players.length>=8} style={{
+            padding:'10px 20px',borderRadius:10,border:'none',
+            background:'var(--accent)',color:'var(--acctxt)',fontWeight:700,fontSize:14,
+            opacity:(!name.trim()||players.length>=8)?.4:1,
           }}>+ Tambah</button>
         </form>
-
         {players.length===0
           ? <p style={{textAlign:'center',color:'var(--muted)',fontSize:13,padding:'12px 0'}}>Belum ada pemain</p>
           : players.map((p,i)=>(
-            <div key={p.id} style={{
-              display:'flex',justifyContent:'space-between',alignItems:'center',
+            <div key={p.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',
               background:'var(--surface2)',borderRadius:10,padding:'10px 14px',
-              border:'1px solid var(--border)',marginBottom:8,
-            }}>
+              border:'1px solid var(--border)',marginBottom:8}}>
               <div style={{display:'flex',alignItems:'center',gap:10}}>
-                <span className="font-display" style={{fontSize:18,color:'var(--accent)',minWidth:20}}>{i+1}</span>
+                <span className="fd" style={{fontSize:18,color:'var(--accent)',minWidth:20}}>{i+1}</span>
                 <span style={{fontWeight:600}}>{p.name}</span>
               </div>
-              <button onClick={()=>setPlayers(prev=>prev.filter(x=>x.id!==p.id))} style={{
-                background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:20,lineHeight:1,padding:'0 4px',
-              }}>×</button>
+              <button onClick={()=>setPlayers(ps=>ps.filter(x=>x.id!==p.id))}
+                style={{background:'none',border:'none',color:'var(--muted)',fontSize:20,lineHeight:1,padding:'0 4px'}}>×</button>
             </div>
           ))
         }
-
         <button onClick={startGame} disabled={!players.length} style={{
-          width:'100%',marginTop:16,padding:'14px',borderRadius:12,
+          ...accentBtn(),marginTop:16,
           background:players.length?'var(--accent)':'var(--border)',
-          color:players.length?'var(--accent-text)':'var(--muted)',
-          border:'none',cursor:players.length?'pointer':'not-allowed',
-          fontFamily:'Bebas Neue',fontSize:22,letterSpacing:'0.05em',transition:'all 0.2s',
+          color:players.length?'var(--acctxt)':'var(--muted)',
+          cursor:players.length?'pointer':'not-allowed',
         }}>MULAI PERMAINAN →</button>
       </div>
     </div>
   );
 
-  // ─── PLAYING SCREEN ────────────────────────────────────────────────────────
-  if (screen === 'playing') return (
+  /* ════════════════════════════════════════════════════════════ */
+  /* PLAYING SCREEN                                               */
+  /* ════════════════════════════════════════════════════════════ */
+  if(screen==='playing') return (
     <div style={{minHeight:'100vh',padding:'16px',maxWidth:1000,margin:'0 auto'}}>
+
+      {/* Double-Out Confirmation Dialog */}
+      {dlg && (
+        <div style={{position:'fixed',inset:0,zIndex:200,
+          background:'rgba(0,0,0,0.75)',backdropFilter:'blur(4px)',
+          display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
+          <div className="ap" style={{background:'var(--surface)',border:'2px solid var(--accent)',
+            borderRadius:20,padding:'32px 28px',textAlign:'center',maxWidth:340,width:'100%',
+            boxShadow:'0 0 60px var(--shadow)'}}>
+            <div style={{fontSize:48,marginBottom:12}}>🎯</div>
+            <p className="fd" style={{fontSize:28,color:'var(--accent)',marginBottom:8}}>CHECKOUT!</p>
+            <p style={{fontSize:14,color:'var(--muted)',marginBottom:6}}>
+              Sisa skor: <strong style={{color:'var(--text)',fontSize:18}}>{dlg.prevScore}</strong>
+            </p>
+            <p style={{fontSize:13,color:'var(--muted)',marginBottom:24,lineHeight:1.6}}>
+              Total lemparan: <strong style={{color:'var(--text)'}}>{dlg.pts}</strong><br/>
+              Apakah dart yang mencetak checkout berupa <strong style={{color:'var(--accent)'}}>Double</strong>?
+            </p>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>handleDlg(false)} style={{
+                flex:1,padding:'14px',borderRadius:12,
+                border:'1px solid var(--border)',background:'var(--surface2)',
+                color:'var(--red2)',fontFamily:'Bebas Neue',fontSize:20,letterSpacing:'.05em',
+              }}>✕ Bukan, Bust</button>
+              <button onClick={()=>handleDlg(true)} style={{
+                flex:1,padding:'14px',borderRadius:12,border:'none',
+                background:'var(--accent)',color:'var(--acctxt)',
+                fontFamily:'Bebas Neue',fontSize:20,letterSpacing:'.05em',
+              }}>✓ Ya, Double!</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Topbar */}
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
         <div style={{display:'flex',alignItems:'center',gap:8}}>
           <span style={{color:'var(--accent)'}}><TargetIcon/></span>
-          <span className="font-display" style={{fontSize:22,color:'var(--accent)'}}>DART SCORER</span>
-          {doubleOut && <span style={{fontSize:10,background:'var(--surface2)',border:'1px solid var(--border)',borderRadius:6,padding:'2px 7px',color:'var(--muted)',letterSpacing:'0.08em'}}>DOUBLE OUT</span>}
+          <span className="fd" style={{fontSize:22,color:'var(--accent)'}}>DART SCORER</span>
+          {dblOut && <span style={{fontSize:10,background:'var(--surface2)',border:'1px solid var(--border)',
+            borderRadius:6,padding:'2px 7px',color:'var(--muted)',letterSpacing:'.08em'}}>DOUBLE OUT</span>}
         </div>
         <div style={{display:'flex',gap:8}}>
-          <button onClick={undoTurn} disabled={!undoStack.length} style={{
-            padding:'7px 13px',borderRadius:9,cursor:undoStack.length?'pointer':'not-allowed',
-            border:'1px solid var(--border)',background:'var(--surface)',
-            color:undoStack.length?'var(--text)':'var(--muted)',fontSize:13,fontWeight:600,
-          }}>↩ Undo</button>
-          <button onClick={rematch} style={{
-            padding:'7px 13px',borderRadius:9,border:'1px solid var(--border)',
-            background:'var(--surface)',color:'var(--text)',cursor:'pointer',fontSize:13,fontWeight:600,
-          }}>⟳ Ulang</button>
-          <button onClick={resetGame} style={{
-            padding:'7px 13px',borderRadius:9,border:'1px solid var(--border)',
-            background:'var(--surface)',color:'var(--accent2)',cursor:'pointer',fontSize:13,fontWeight:600,
-          }}>✕ Reset</button>
-          <button className="theme-toggle" onClick={()=>setLightMode(m=>!m)}>
-            {lightMode ? '🌙' : '☀️'}
+          <button className="tbtn" onClick={doUndo} disabled={!undo.length}
+            style={{color:undo.length?'var(--text)':'var(--muted)',cursor:undo.length?'pointer':'not-allowed'}}>
+            ↩ Undo
           </button>
+          <button className="tbtn" onClick={rematch}>⟳ Ulang</button>
+          <button className="tbtn" onClick={resetGame} style={{color:'var(--red2)'}}>✕ Reset</button>
+          <button className="tbtn" onClick={()=>setLight(l=>!l)}>{light?'🌙':'☀️'}</button>
         </div>
       </div>
 
       <div style={{display:'grid',gridTemplateColumns:'320px 1fr',gap:16,alignItems:'start'}}>
 
-        {/* ── Input panel ── */}
+        {/* ── Input Panel ── */}
         <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:16,padding:20}}>
-          {/* Current player */}
-          <div style={{marginBottom:16}}>
-            <p style={{fontSize:11,color:'var(--muted)',letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:4}}>Giliran</p>
-            <p className="font-display" style={{fontSize:30,color:'var(--accent)',lineHeight:1}}>{currentPlayer?.name}</p>
-            {legsToWin > 1 && (
+
+          {/* Current player name */}
+          <div style={{marginBottom:14}}>
+            <p style={{fontSize:11,color:'var(--muted)',letterSpacing:'.12em',textTransform:'uppercase',marginBottom:4}}>Giliran</p>
+            <p className="fd" style={{fontSize:30,color:'var(--accent)',lineHeight:1}}>{cur?.name}</p>
+            {legs>1 && (
               <div style={{display:'flex',gap:4,marginTop:6,alignItems:'center'}}>
-                {Array.from({length:legsToWin}).map((_,j)=>(
-                  <span key={j} className={`leg-pip${j<(currentPlayer?.legsWon||0)?' won':''}`}/>
+                {Array.from({length:legs}).map((_,j)=>(
+                  <span key={j} className={`pip${j<(cur?.legsWon||0)?' on':''}`}/>
                 ))}
                 <span style={{fontSize:10,color:'var(--muted)',marginLeft:4}}>legs won</span>
               </div>
             )}
           </div>
 
-          {/* Checkout suggestion */}
+          {/* Checkout suggestion — only shown when score <= 170 */}
           {checkout && (
-            <div style={{
-              background:'linear-gradient(135deg,#e53935,#b71c1c)',color:'#ffffff',
+            <div style={{background:'linear-gradient(135deg,#e53935,#b71c1c)',color:'#fff',
               borderRadius:10,padding:'10px 14px',marginBottom:14,
-              display:'flex',alignItems:'center',gap:10,
-            }}>
+              display:'flex',alignItems:'center',gap:10}}>
               <span style={{fontSize:20}}>🎯</span>
               <div>
-                <p style={{fontSize:10,fontWeight:800,letterSpacing:'0.12em',textTransform:'uppercase'}}>CHECKOUT</p>
-                <p className="font-display" style={{fontSize:17,letterSpacing:'0.04em'}}>{checkout}</p>
+                <p style={{fontSize:10,fontWeight:800,letterSpacing:'.12em',textTransform:'uppercase'}}>CHECKOUT</p>
+                <p className="fd" style={{fontSize:17,letterSpacing:'.04em'}}>{checkout}</p>
               </div>
             </div>
           )}
 
-          {/* Dart inputs — max 60 each */}
-          <p style={{fontSize:11,color:'var(--muted)',marginBottom:8,letterSpacing:'0.08em',textTransform:'uppercase'}}>
+          {/* Dart inputs — max 60 per dart */}
+          <p style={{fontSize:11,color:'var(--muted)',marginBottom:8,letterSpacing:'.08em',textTransform:'uppercase'}}>
             Skor Tiap Dart (0 – 60)
           </p>
           <div style={{display:'flex',gap:8,marginBottom:8}}>
             {[0,1,2].map(i=>(
-              <input
-                key={i}
-                ref={i===0?dart1Ref:null}
+              <input key={i}
+                ref={i===0?d1Ref:null}
                 type="number" min="0" max="60"
                 placeholder={`D${i+1}`}
                 value={darts[i]}
                 onChange={e=>{
                   const v=e.target.value;
                   setDarts(prev=>{const n=[...prev];n[i]=v;return n;});
-                  setError('');
+                  setErr('');
                 }}
-                onKeyDown={e=>{ if(e.key==='Enter'&&i===2) submitScore(); }}
+                onKeyDown={e=>{ if(e.key==='Enter'&&i===2) submit(); }}
                 style={{
                   width:'33%',textAlign:'center',
                   fontFamily:'Bebas Neue',fontSize:30,
                   padding:'12px 4px',borderRadius:10,
                   background:'var(--surface2)',
-                  border:`2px solid ${willBust?'var(--accent2)':willFinish?'var(--green)':'var(--border)'}`,
-                  color:willBust?'var(--accent2)':willFinish?'var(--green)':'var(--text)',
-                  outline:'none',transition:'border-color 0.2s, color 0.2s',
+                  border:`2px solid ${willBust?'var(--accent)':willWin?'var(--green)':'var(--border)'}`,
+                  color:willBust?'var(--accent)':willWin?'var(--green)':'var(--text)',
+                  outline:'none',transition:'border-color .2s,color .2s',
                 }}
               />
             ))}
           </div>
 
-          {/* Running total + remaining */}
-          <div style={{
-            background:'var(--surface2)',borderRadius:10,padding:'10px 14px',
-            display:'flex',justifyContent:'space-between',alignItems:'center',
-            marginBottom:14,
-            border:`1px solid ${willBust?'var(--accent2)':willFinish?'var(--green)':'transparent'}`,
-            transition:'border-color 0.2s',
-          }}>
+          {/* Total & remain indicator */}
+          <div style={{background:'var(--surface2)',borderRadius:10,padding:'10px 14px',
+            display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14,
+            border:`1px solid ${willBust?'var(--accent)':willWin?'var(--green)':'transparent'}`,
+            transition:'border-color .2s'}}>
             <div>
               <p style={{fontSize:10,color:'var(--muted)'}}>Total lemparan</p>
-              <p className="font-display" style={{fontSize:24,color:willBust?'var(--accent2)':willFinish?'var(--green)':'var(--text)'}}>{currentTotal}</p>
+              <p className="fd" style={{fontSize:24,
+                color:willBust?'var(--accent)':willWin?'var(--green)':'var(--text)'}}>{total}</p>
             </div>
             <div style={{textAlign:'right'}}>
               <p style={{fontSize:10,color:'var(--muted)'}}>Sisa setelah</p>
-              <p className="font-display" style={{fontSize:24,color:willBust?'var(--accent2)':willFinish?'var(--green)':'var(--text)'}}>
-                {currentTotal>0 ? (willBust?'BUST':willFinish?'WIN!':remainAfter) : '–'}
+              <p className="fd" style={{fontSize:24,
+                color:willBust?'var(--accent)':willWin?'var(--green)':'var(--text)'}}>
+                {total>0?(willBust?'BUST':willWin?'WIN!':remain):'–'}
               </p>
             </div>
           </div>
@@ -595,106 +579,88 @@ function App() {
           {/* Quick score buttons */}
           <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6,marginBottom:14}}>
             {[26,41,45,60,81,85,100,140].map(v=>(
-              <button key={v} type="button" onClick={()=>quickScore(v)} style={{
+              <button key={v} onClick={()=>quickScore(v)} style={{
                 padding:'8px 4px',borderRadius:8,border:'1px solid var(--border)',
-                background:'var(--surface2)',color:'var(--text)',cursor:'pointer',fontSize:13,fontWeight:600,
+                background:'var(--surface2)',color:'var(--text)',fontSize:13,fontWeight:600,
               }}>{v}</button>
             ))}
-            <button type="button" onClick={()=>quickScore(0)} style={{
+            <button onClick={()=>quickScore(0)} style={{
               gridColumn:'span 2',padding:'8px',borderRadius:8,
               border:'1px solid var(--border)',background:'var(--surface2)',
-              color:'var(--muted)',cursor:'pointer',fontSize:13,fontWeight:600,
+              color:'var(--muted)',fontSize:13,fontWeight:600,
             }}>Miss (0)</button>
-            <button type="button" onClick={()=>quickScore(180)} style={{
+            <button onClick={()=>quickScore(180)} style={{
               gridColumn:'span 2',padding:'8px',borderRadius:8,
-              border:'1px solid var(--accent2)',background:'rgba(255,71,87,0.1)',
-              color:'var(--accent2)',cursor:'pointer',fontSize:13,fontWeight:700,
+              border:'1px solid var(--accent)',background:'rgba(229,57,53,.1)',
+              color:'var(--accent)',fontSize:13,fontWeight:700,
             }}>180!</button>
           </div>
 
-          {/* Error */}
-          {error && (
-            <p className={bustAnim?'anim-bust':''} style={{
-              color:error.includes('BUST')?'var(--accent2)':'#facc15',
+          {/* Error message */}
+          {err && (
+            <p className={bustAnim?'ab':''} style={{
+              color:err.includes('BUST')?'var(--accent)':'#facc15',
               textAlign:'center',fontSize:13,fontWeight:700,
               marginBottom:10,padding:'8px 12px',borderRadius:8,
-              background:error.includes('BUST')?'rgba(255,71,87,0.1)':'rgba(250,204,21,0.08)',
-            }}>{error}</p>
+              background:err.includes('BUST')?'rgba(229,57,53,.1)':'rgba(250,204,21,.08)',
+            }}>{err}</p>
           )}
 
-          <button onClick={submitScore} style={{
-            width:'100%',padding:'13px',borderRadius:12,border:'none',cursor:'pointer',
-            background:'var(--accent)',color:'var(--accent-text)',
-            fontFamily:'Bebas Neue',fontSize:22,letterSpacing:'0.05em',
-          }}>INPUT SKOR →</button>
+          <button onClick={submit} style={accentBtn()}>INPUT SKOR →</button>
         </div>
 
         {/* ── Scoreboard ── */}
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(175px,1fr))',gap:12}}>
           {players.map((p,i)=>{
-            const isActive = i === currentIdx;
-            const avgPerTurn = p.stats.turns>0 ? (p.stats.totalPoints/p.stats.turns).toFixed(1) : '–';
+            const isActive = i===curIdx;
+            const avg = p.stats.turns>0?(p.stats.totalPoints/p.stats.turns).toFixed(1):'–';
             return (
-              <div key={p.id} className={isActive?'card-active':''} style={{
+              <div key={p.id} className={isActive?'card-on':''} style={{
                 background:'var(--surface)',borderRadius:14,padding:16,
-                border:'1px solid var(--border)',transition:'all 0.25s',
-                position:'relative',
+                border:'1px solid var(--border)',transition:'all .25s',position:'relative',
               }}>
                 {isActive && (
-                  <div style={{
-                    position:'absolute',top:-12,left:'50%',transform:'translateX(-50%)',
-                    background:'var(--accent)',color:'var(--accent-text)',fontSize:10,fontWeight:800,
-                    padding:'3px 10px',borderRadius:20,letterSpacing:'0.08em',
-                    textTransform:'uppercase',whiteSpace:'nowrap',
-                  }}>▶ GILIRAN</div>
+                  <div style={{position:'absolute',top:-12,left:'50%',transform:'translateX(-50%)',
+                    background:'var(--accent)',color:'var(--acctxt)',fontSize:10,fontWeight:800,
+                    padding:'3px 10px',borderRadius:20,letterSpacing:'.08em',
+                    textTransform:'uppercase',whiteSpace:'nowrap'}}>▶ GILIRAN</div>
                 )}
-
-                <p style={{fontSize:13,fontWeight:700,textAlign:'center',marginBottom:4,color:isActive?'var(--accent)':'var(--text)'}}>{p.name}</p>
-
-                {legsToWin>1 && (
+                <p style={{fontSize:13,fontWeight:700,textAlign:'center',marginBottom:4,
+                  color:isActive?'var(--accent)':'var(--text)'}}>{p.name}</p>
+                {legs>1 && (
                   <div style={{display:'flex',justifyContent:'center',gap:4,marginBottom:8}}>
-                    {Array.from({length:legsToWin}).map((_,j)=>(
-                      <span key={j} className={`leg-pip${j<p.legsWon?' won':''}`}/>
+                    {Array.from({length:legs}).map((_,j)=>(
+                      <span key={j} className={`pip${j<p.legsWon?' on':''}`}/>
                     ))}
                   </div>
                 )}
-
-                {/* Score — re-animates on change */}
-                <div key={p.score} className={isActive?'anim-score':''} style={{textAlign:'center',margin:'6px 0 10px'}}>
-                  <span className="font-display" style={{
-                    fontSize:52,lineHeight:1,
-                    color:p.score<=50?'var(--accent2)':p.score<=100?'#facc15':isActive?'var(--accent)':'var(--text)',
-                  }}>{p.score}</span>
+                {/* Score with re-animate on change */}
+                <div key={p.score} style={{textAlign:'center',margin:'6px 0 10px'}}>
+                  <span className="fd" style={{fontSize:52,lineHeight:1,
+                    color:p.score<=50?'var(--accent)':p.score<=100?'#facc15':isActive?'var(--accent)':'var(--text)'}}>
+                    {p.score}
+                  </span>
                 </div>
-
                 {/* Mini stats */}
                 <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}>
-                  <div style={{textAlign:'center'}}>
-                    <p style={{fontSize:10,color:'var(--muted)'}}>Avg</p>
-                    <p style={{fontSize:13,fontWeight:700}}>{avgPerTurn}</p>
-                  </div>
-                  <div style={{textAlign:'center'}}>
-                    <p style={{fontSize:10,color:'var(--muted)'}}>Bust</p>
-                    <p style={{fontSize:13,fontWeight:700,color:p.stats.busts>0?'var(--accent2)':'var(--text)'}}>{p.stats.busts}</p>
-                  </div>
-                  <div style={{textAlign:'center'}}>
-                    <p style={{fontSize:10,color:'var(--muted)'}}>Turns</p>
-                    <p style={{fontSize:13,fontWeight:700}}>{p.stats.turns}</p>
-                  </div>
+                  {[['Avg',avg],['Bust',p.stats.busts],['Turns',p.stats.turns]].map(([l,v])=>(
+                    <div key={l} style={{textAlign:'center'}}>
+                      <p style={{fontSize:10,color:'var(--muted)'}}>{l}</p>
+                      <p style={{fontSize:13,fontWeight:700,
+                        color:l==='Bust'&&v>0?'var(--accent)':'var(--text)'}}>{v}</p>
+                    </div>
+                  ))}
                 </div>
-
                 {/* History */}
                 <div style={{background:'var(--bg)',borderRadius:8,padding:'8px 10px',maxHeight:88,overflowY:'auto'}}>
                   {p.history.length===0
                     ? <p style={{fontSize:11,color:'var(--muted)',textAlign:'center'}}>–</p>
                     : [...p.history].reverse().slice(0,8).map((h,j)=>(
-                      <div key={j} style={{
-                        display:'flex',justifyContent:'space-between',
+                      <div key={j} style={{display:'flex',justifyContent:'space-between',
                         fontSize:12,marginBottom:2,
-                        color:h.isBust?'var(--accent2)':'var(--muted)',
-                      }}>
+                        color:h.bust?'var(--accent)':'var(--muted)'}}>
                         <span>R{p.history.length-j}</span>
-                        <span style={{fontWeight:600}}>{h.isBust?'BUST':`-${h.points}`}</span>
+                        <span style={{fontWeight:600}}>{h.bust?'BUST':`-${h.pts}`}</span>
                       </div>
                     ))
                   }
@@ -707,53 +673,45 @@ function App() {
     </div>
   );
 
-  // ─── WINNER SCREEN ────────────────────────────────────────────────────────
-  if (screen === 'finished') return (
+  /* ════════════════════════════════════════════════════════════ */
+  /* WINNER SCREEN                                                */
+  /* ════════════════════════════════════════════════════════════ */
+  if(screen==='finished') return (
     <>
       <Confetti/>
       <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
-        <div className="anim-win" style={{
-          background:'var(--surface)',border:'2px solid var(--accent)',
-          borderRadius:24,padding:'48px 40px',textAlign:'center',
-          maxWidth:480,width:'100%',
-          boxShadow:'0 0 80px var(--shadow)',
-        }}>
+        <div className="ap" style={{background:'var(--surface)',border:'2px solid var(--accent)',
+          borderRadius:24,padding:'48px 40px',textAlign:'center',maxWidth:480,width:'100%',
+          boxShadow:'0 0 80px var(--shadow)'}}>
           <div style={{fontSize:72,marginBottom:16}}>🏆</div>
-          <p style={{fontSize:11,color:'var(--muted)',letterSpacing:'0.15em',textTransform:'uppercase',marginBottom:6}}>Pemenang</p>
-          <h1 className="font-display" style={{fontSize:56,color:'var(--accent)',lineHeight:1,marginBottom:6}}>{winner?.name}</h1>
+          <p style={{fontSize:11,color:'var(--muted)',letterSpacing:'.15em',textTransform:'uppercase',marginBottom:6}}>Pemenang</p>
+          <h1 className="fd" style={{fontSize:56,color:'var(--accent)',lineHeight:1,marginBottom:6}}>{winner?.name}</h1>
           <p style={{color:'var(--muted)',fontSize:13,marginBottom:32}}>
-            {legsToWin>1 ? `Memenangkan ${winner?.legsWon} leg!` : `Skor awal: ${startScore}`}
-            {doubleOut && ' · Double Out'}
+            {legs>1?`Memenangkan ${winner?.legsWon} leg!`:`Skor awal: ${start}`}
+            {dblOut&&' · Double Out'}
           </p>
-
-          {/* Final stats table */}
+          {/* Final stats */}
           <div style={{display:'grid',gridTemplateColumns:`repeat(${Math.min(players.length,3)},1fr)`,gap:10,marginBottom:32}}>
             {[...players].sort((a,b)=>b.legsWon-a.legsWon||(a.score-b.score)).map(p=>(
-              <div key={p.id} style={{
-                background:'var(--surface2)',borderRadius:10,padding:'12px 8px',
-                border:p.id===winner?.id?'1px solid var(--accent)':'1px solid var(--border)',
-              }}>
-                <p style={{fontSize:12,fontWeight:700,marginBottom:4,color:p.id===winner?.id?'var(--accent)':'var(--text)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.name}</p>
-                <p className="font-display" style={{fontSize:28,color:'var(--text)'}}>
+              <div key={p.id} style={{background:'var(--surface2)',borderRadius:10,padding:'12px 8px',
+                border:p.id===winner?.id?'1px solid var(--accent)':'1px solid var(--border)'}}>
+                <p style={{fontSize:12,fontWeight:700,marginBottom:4,overflow:'hidden',
+                  textOverflow:'ellipsis',whiteSpace:'nowrap',
+                  color:p.id===winner?.id?'var(--accent)':'var(--text)'}}>{p.name}</p>
+                <p className="fd" style={{fontSize:28}}>
                   {p.stats.turns>0?(p.stats.totalPoints/p.stats.turns).toFixed(1):'–'}
                 </p>
                 <p style={{fontSize:10,color:'var(--muted)'}}>avg/turn</p>
-                {legsToWin>1 && <p style={{fontSize:11,color:'var(--accent)',marginTop:4}}>{p.legsWon} leg{p.legsWon!==1?'s':''}</p>}
+                {legs>1&&<p style={{fontSize:11,color:'var(--accent)',marginTop:4}}>{p.legsWon} leg{p.legsWon!==1?'s':''}</p>}
               </div>
             ))}
           </div>
-
           <div style={{display:'flex',flexDirection:'column',gap:10}}>
-            <button onClick={rematch} style={{
-              padding:'14px',borderRadius:12,border:'none',cursor:'pointer',
-              background:'var(--accent)',color:'var(--accent-text)',
-              fontFamily:'Bebas Neue',fontSize:22,letterSpacing:'0.05em',
-            }}>⟳ REMATCH ({startScore})</button>
+            <button onClick={rematch} style={accentBtn()}>⟳ REMATCH ({start})</button>
             <button onClick={resetGame} style={{
-              padding:'14px',borderRadius:12,
-              border:'1px solid var(--border)',cursor:'pointer',
+              padding:'14px',borderRadius:12,border:'1px solid var(--border)',
               background:'transparent',color:'var(--muted)',
-              fontFamily:'Bebas Neue',fontSize:18,letterSpacing:'0.05em',
+              fontFamily:'Bebas Neue',fontSize:18,letterSpacing:'.05em',width:'100%',
             }}>✕ GANTI PEMAIN</button>
           </div>
         </div>
@@ -762,8 +720,7 @@ function App() {
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App/>);
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
