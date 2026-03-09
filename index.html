@@ -3,454 +3,767 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Dart Scorer</title>
-  
-  <!-- Memuat React dan Tailwind langsung dari Internet -->
+  <title>Dart Scorer Pro</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── DARK MODE (default) ── */
+    :root {
+      --bg: #0e0f13;
+      --surface: #16181f;
+      --surface2: #1e2029;
+      --border: #2a2d3a;
+      --accent: #e53935;
+      --accent-text: #ffffff;
+      --accent2: #ff6b6b;
+      --green: #2ed573;
+      --text: #f0f2ff;
+      --muted: #6b7080;
+      --shadow: rgba(229,57,53,0.15);
+      --grad1: rgba(229,57,53,0.05);
+      --grad2: rgba(255,107,107,0.04);
+    }
+    /* ── LIGHT MODE ── */
+    body.light {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface2: #f0f0f0;
+      --border: #e0e0e0;
+      --accent: #e53935;
+      --accent-text: #ffffff;
+      --accent2: #c62828;
+      --green: #2e7d32;
+      --text: #1a1a1a;
+      --muted: #757575;
+      --shadow: rgba(229,57,53,0.12);
+      --grad1: rgba(229,57,53,0.04);
+      --grad2: rgba(198,40,40,0.03);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+      background-image:
+        radial-gradient(ellipse at 20% 50%, var(--grad1) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 10%, var(--grad2) 0%, transparent 50%);
+    }
+    .font-display { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
+
+    @keyframes fadeIn  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes bust    { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+    @keyframes scoreIn { 0%{transform:scale(0.8);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+    @keyframes winPop  { 0%{transform:scale(0.4) rotate(-6deg);opacity:0} 70%{transform:scale(1.06) rotate(1deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
+    @keyframes fall    { to{transform:translateY(110vh) rotate(720deg);opacity:0} }
+
+    .anim-fade   { animation: fadeIn  0.35s ease forwards; }
+    .anim-bust   { animation: bust    0.4s  ease; }
+    .anim-score  { animation: scoreIn 0.28s ease forwards; }
+    .anim-win    { animation: winPop  0.55s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; }
+    input[type=number] { -moz-appearance:textfield; }
+
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-track { background:var(--surface); }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+    .card-active {
+      border-color: var(--accent) !important;
+      box-shadow: 0 0 0 1px var(--accent), 0 8px 32px var(--shadow);
+    }
+    .leg-pip { width:9px; height:9px; border-radius:50%; background:var(--border); display:inline-block; transition:background 0.2s; }
+    .leg-pip.won { background:var(--accent); }
+    .confetti-piece { position:fixed; top:-12px; animation:fall linear forwards; }
+
+    button { transition: opacity 0.15s, transform 0.1s; }
+    button:hover:not(:disabled) { opacity:0.82; }
+    button:active:not(:disabled) { transform:scale(0.97); }
+
+    .theme-toggle {
+      padding: 7px 13px; border-radius:9px; border:1px solid var(--border);
+      background:var(--surface); color:var(--text); cursor:pointer;
+      font-size:13px; font-weight:600;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans">
-  <div id="root"></div>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+// ─── CHECKOUT TABLE ───────────────────────────────────────────────────────────
+const CHECKOUTS = {
+  170:"T20 T20 Bull",167:"T20 T19 Bull",164:"T20 T18 Bull",161:"T20 T17 Bull",
+  160:"T20 T20 D20", 158:"T20 T20 D19",157:"T19 T20 Bull",156:"T20 T20 D18",
+  155:"T20 T19 D19", 154:"T20 T18 Bull",153:"T20 T19 D18",152:"T20 T20 D16",
+  151:"T20 T17 Bull",150:"T20 T18 D18",149:"T20 T19 D16",148:"T20 T16 Bull",
+  147:"T20 T17 D18", 146:"T20 T18 D16",145:"T20 T15 Bull",144:"T20 T20 D12",
+  143:"T20 T17 D16", 142:"T20 T14 Bull",141:"T20 T15 D18",140:"T20 T20 D10",
+  139:"T20 T13 Bull",138:"T20 T18 D12",137:"T20 T15 D16",136:"T20 T20 D8",
+  135:"T20 T17 D12", 134:"T20 T14 D16",133:"T20 T19 D8", 132:"T20 T16 D12",
+  131:"T20 T13 D16", 130:"T20 T18 D8", 129:"T19 T16 D12",128:"T20 T20 D4",
+  127:"T20 T17 D8",  126:"T19 T19 D6", 125:"T20 T15 D10",124:"T20 T16 D8",
+  123:"T19 T16 D9",  122:"T18 T18 D7", 121:"T20 T11 D14",120:"T20 S20 D20",
+  119:"T19 T12 D13", 118:"T20 S18 D20",117:"T20 S17 D20",116:"T20 S16 D20",
+  115:"T19 S18 D20", 114:"T20 S14 D20",113:"T19 S16 D20",112:"T20 S12 D20",
+  111:"T19 S14 D20", 110:"T20 S10 D20",109:"T19 S12 D20",108:"T20 S8 D20",
+  107:"T19 S10 D20", 106:"T20 S6 D20", 105:"T19 S8 D20", 104:"T18 S10 D20",
+  103:"T19 S6 D20",  102:"T20 S2 D20", 101:"T17 S10 D20",100:"T20 D20",
+  99:"T19 D21",      98:"T20 D19",     97:"T19 D20",     96:"T20 D18",
+  95:"T19 D19",      94:"T18 D20",     93:"T19 D18",     92:"T20 D16",
+  91:"T17 D20",      90:"T18 D18",     89:"T19 D16",     88:"T20 D14",
+  87:"T17 D18",      86:"T18 D16",     85:"T15 D20",     84:"T20 D12",
+  83:"T17 D16",      82:"T14 D20",     81:"T19 D12",     80:"T20 D10",
+  79:"T13 D20",      78:"T18 D12",     77:"T15 D16",     76:"T20 D8",
+  75:"T17 D12",      74:"T14 D16",     73:"T19 D8",      72:"T16 D12",
+  71:"T13 D16",      70:"T18 D8",      69:"T19 D6",      68:"T20 D4",
+  67:"T17 D8",       66:"T10 D18",     65:"T19 D4",      64:"T16 D8",
+  63:"T13 D12",      62:"T10 D16",     61:"T15 D8",      60:"S20 D20",
+  59:"S19 D20",      58:"S18 D20",     57:"S17 D20",     56:"S16 D20",
+  55:"S15 D20",      54:"S14 D20",     53:"S13 D20",     52:"S12 D20",
+  51:"S11 D20",      50:"Bull",        49:"S9 D20",      48:"S8 D20",
+  47:"S7 D20",       46:"S6 D20",      45:"S5 D20",      44:"S4 D20",
+  43:"S3 D20",       42:"S2 D20",      41:"S1 D20",      40:"D20",
+  38:"D19",          36:"D18",         34:"D17",         32:"D16",
+  30:"D15",          28:"D14",         26:"D13",         24:"D12",
+  22:"D11",          20:"D10",         18:"D9",          16:"D8",
+  14:"D7",           12:"D6",          10:"D5",          8:"D4",
+  6:"D3",            4:"D2",           2:"D1",
+};
 
-    // --- Kumpulan Ikon (Pengganti lucide-react agar tidak perlu install npm) ---
-    const TargetIcon = ({ className }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-    );
-    const UsersIcon = ({ className }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    );
-    const PlusIcon = ({ className }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    );
-    const XIcon = ({ className }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    );
-    const ArrowRightIcon = ({ className }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-    );
-    const RotateCcwIcon = ({ className }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-    );
-    const TrophyIcon = ({ className }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-    );
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+const TargetIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+  </svg>
+);
 
-    function App() {
-      const [gameState, setGameState] = useState('setup');
-      const [startingScore, setStartingScore] = useState(501);
-      const [players, setPlayers] = useState([]);
-      const [newPlayerName, setNewPlayerName] = useState('');
-      const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-      
-      // State baru untuk 3 dart terpisah
-      const [dart1, setDart1] = useState('');
-      const [dart2, setDart2] = useState('');
-      const [dart3, setDart3] = useState('');
-      
-      const [winner, setWinner] = useState(null);
-      const [errorMsg, setErrorMsg] = useState('');
+function Confetti() {
+  const colors = ['#e8ff47','#ff4757','#2ed573','#1e90ff','#ffd700','#ff6b81'];
+  const pieces = Array.from({length:55}, (_,i) => ({
+    id:i, left:Math.random()*100,
+    delay:Math.random()*1.8, dur:2.2+Math.random()*2,
+    color:colors[i%colors.length], size:5+Math.random()*8,
+    round:Math.random()>0.5,
+  }));
+  return (
+    <div style={{position:'fixed',inset:0,pointerEvents:'none',zIndex:999}}>
+      {pieces.map(p=>(
+        <div key={p.id} className="confetti-piece" style={{
+          left:`${p.left}%`, background:p.color,
+          width:p.size, height:p.size,
+          borderRadius: p.round?'50%':'2px',
+          animationDelay:`${p.delay}s`, animationDuration:`${p.dur}s`,
+        }}/>
+      ))}
+    </div>
+  );
+}
 
-      const inputRef = useRef(null);
+const mkPlayer = (id, name, startScore) => ({
+  id, name, score:startScore, legsWon:0, history:[],
+  stats:{ totalDarts:0, totalPoints:0, busts:0, turns:0 },
+});
 
-      useEffect(() => {
-        if (gameState === 'playing' && inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, [gameState, currentPlayerIndex]);
+// ─── APP ──────────────────────────────────────────────────────────────────────
+function App() {
+  const [screen, setScreen]         = useState('setup');
+  const [startScore, setStartScore] = useState(501);
+  const [legsToWin, setLegsToWin]   = useState(1);   // legs needed to win match
+  const [doubleOut, setDoubleOut]   = useState(false);
+  const [players, setPlayers]       = useState([]);
+  const [newName, setNewName]       = useState('');
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [darts, setDarts]           = useState(['','','']);
+  const [undoStack, setUndoStack]   = useState([]);   // snapshots for undo
+  const [error, setError]           = useState('');
+  const [bustAnim, setBustAnim]     = useState(false);
+  const [winner, setWinner]         = useState(null);
+  const [lightMode, setLightMode]   = useState(false);
+  const dart1Ref = useRef(null);
 
-      const handleAddPlayer = (e) => {
-        e.preventDefault();
-        if (newPlayerName.trim() === '') return;
-        setPlayers([...players, { 
-          id: Date.now(), 
-          name: newPlayerName.trim(), 
-          score: startingScore,
-          history: []
-        }]);
-        setNewPlayerName('');
-      };
+  useEffect(() => {
+    document.body.classList.toggle('light', lightMode);
+  }, [lightMode]);
 
-      const handleRemovePlayer = (id) => {
-        setPlayers(players.filter(p => p.id !== id));
-      };
+  useEffect(() => {
+    if (screen === 'playing') setTimeout(() => dart1Ref.current?.focus(), 80);
+  }, [screen, currentIdx]);
 
-      const startGame = () => {
-        if (players.length < 1) {
-          setErrorMsg('Tambahkan minimal 1 pemain!');
-          return;
-        }
-        setErrorMsg('');
-        setPlayers(players.map(p => ({ ...p, score: startingScore, history: [] })));
-        setCurrentPlayerIndex(0);
-        setGameState('playing');
-        setWinner(null);
-        setDart1('');
-        setDart2('');
-        setDart3('');
-      };
+  // ── Setup helpers ────────────────────────────────────────────────────────
+  const addPlayer = (e) => {
+    e.preventDefault();
+    if (!newName.trim() || players.length >= 8) return;
+    setPlayers(prev => [...prev, mkPlayer(Date.now(), newName.trim(), startScore)]);
+    setNewName('');
+  };
 
-      const handleScoreSubmit = (e) => {
-        e.preventDefault();
-        setErrorMsg('');
-        
-        const d1 = parseInt(dart1) || 0;
-        const d2 = parseInt(dart2) || 0;
-        const d3 = parseInt(dart3) || 0;
+  const startGame = () => {
+    if (!players.length) return;
+    setPlayers(prev => prev.map(p => mkPlayer(p.id, p.name, startScore)));
+    setCurrentIdx(0); setUndoStack([]); setDarts(['','','']);
+    setWinner(null); setError(''); setScreen('playing');
+  };
 
-        if (dart1 === '' && dart2 === '' && dart3 === '') {
-          setErrorMsg('Masukkan minimal 1 skor dart!');
-          return;
-        }
+  // ── Bust detection ────────────────────────────────────────────────────────
+  // newScore < 0  → always bust
+  // newScore == 1 → bust only in Double Out (no D½ exists)
+  // newScore == 0 → win (both modes; Double Out trusts the user hit a double)
+  const isBustScore = (newScore) =>
+    newScore < 0 || (doubleOut && newScore === 1);
 
-        const points = d1 + d2 + d3;
-        
-        if (points < 0 || points > 180) {
-          setErrorMsg('Total skor per giliran maksimal 180 dan minimal 0.');
-          return;
-        }
+  // ── Score submission ──────────────────────────────────────────────────────
+  const submitScore = (e) => {
+    e?.preventDefault();
+    setError('');
 
-        const currentPlayer = players[currentPlayerIndex];
-        const newScore = currentPlayer.score - points;
+    const vals = darts.map(d => d === '' ? null : parseInt(d, 10));
+    if (vals.every(v => v === null)) { setError('Masukkan minimal 1 skor dart!'); return; }
 
-        let updatedPlayers = [...players];
-        let isBust = false;
-
-        if (newScore < 0) {
-          isBust = true;
-          setErrorMsg('Bust! Skor melebihi batas.');
-        }
-
-        if (isBust) {
-          updatedPlayers[currentPlayerIndex] = {
-            ...currentPlayer,
-            history: [...currentPlayer.history, { points, type: 'bust' }]
-          };
-        } else {
-          updatedPlayers[currentPlayerIndex] = {
-            ...currentPlayer,
-            score: newScore,
-            history: [...currentPlayer.history, { points, type: 'hit' }]
-          };
-        }
-
-        setPlayers(updatedPlayers);
-        setDart1('');
-        setDart2('');
-        setDart3('');
-
-        if (newScore === 0) {
-          setWinner(currentPlayer);
-          setGameState('finished');
-        } else {
-          setCurrentPlayerIndex((currentPlayerIndex + 1) % players.length);
-        }
-      };
-
-      const handleQuickScore = (val) => {
-        if (val === 180) {
-          setDart1('60');
-          setDart2('60');
-          setDart3('60');
-        } else if (val === 0) {
-          setDart1('0');
-          setDart2('0');
-          setDart3('0');
-        } else {
-          // Jika pakai tombol cepat total, masukkan ke dart 1 dan kosongkan sisanya
-          setDart1(val.toString());
-          setDart2('');
-          setDart3('');
-        }
-      };
-
-      const resetGame = () => {
-        setGameState('setup');
-        setWinner(null);
-        setPlayers([]);
-        setStartingScore(501);
-      };
-
-      const playRematch = () => {
-        setPlayers(players.map(p => ({ ...p, score: startingScore, history: [] })));
-        setCurrentPlayerIndex(0);
-        setGameState('playing');
-        setWinner(null);
-        setDart1('');
-        setDart2('');
-        setDart3('');
-      };
-
-      // Hitung total poin secara real-time untuk ditampilkan
-      const currentTotal = (parseInt(dart1) || 0) + (parseInt(dart2) || 0) + (parseInt(dart3) || 0);
-
-      return (
-        <div className="min-h-screen p-4 md:p-8">
-          <div className="max-w-4xl mx-auto">
-            
-            {/* HEADER */}
-            <header className="flex items-center justify-center mb-8 space-x-3 text-slate-900">
-              <TargetIcon className="w-8 h-8 text-red-500" />
-              <h1 className="text-3xl font-bold tracking-tight">Dart Scorer</h1>
-            </header>
-
-            {/* SETUP SCREEN */}
-            {gameState === 'setup' && (
-              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
-                <h2 className="text-xl font-semibold mb-6 flex items-center">
-                  <UsersIcon className="w-5 h-5 mr-2 text-blue-500" /> Pengaturan Permainan
-                </h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-600 mb-2">Skor Awal</label>
-                    <div className="flex space-x-3">
-                      {[301, 501, 701].map(score => (
-                        <button
-                          key={score}
-                          onClick={() => setStartingScore(score)}
-                          className={`flex-1 py-3 rounded-lg font-bold border transition-all ${
-                            startingScore === score 
-                              ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
-                              : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
-                          }`}
-                        >
-                          {score}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-600 mb-2">Tambah Pemain</label>
-                    <form onSubmit={handleAddPlayer} className="flex space-x-2 mb-4">
-                      <input
-                        type="text"
-                        placeholder="Nama Pemain..."
-                        value={newPlayerName}
-                        onChange={(e) => setNewPlayerName(e.target.value)}
-                        className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <button 
-                        type="submit"
-                        className="px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center"
-                      >
-                        <PlusIcon className="w-5 h-5" />
-                      </button>
-                    </form>
-
-                    <div className="space-y-2">
-                      {players.map(player => (
-                        <div key={player.id} className="flex justify-between items-center bg-slate-50 px-4 py-3 rounded-lg border border-slate-100">
-                          <span className="font-medium text-slate-700">{player.name}</span>
-                          <button 
-                            onClick={() => handleRemovePlayer(player.id)}
-                            className="text-red-400 hover:text-red-600 transition-colors"
-                          >
-                            <XIcon className="w-5 h-5" />
-                          </button>
-                        </div>
-                      ))}
-                      {players.length === 0 && (
-                        <p className="text-sm text-slate-400 italic text-center py-2">Belum ada pemain yang ditambahkan.</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {errorMsg && <p className="text-red-500 mt-4 text-center font-medium bg-red-50 p-3 rounded-lg">{errorMsg}</p>}
-
-                <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-                  <button
-                    onClick={startGame}
-                    disabled={players.length === 0}
-                    className={`w-full md:w-auto px-8 py-3 rounded-xl font-bold text-lg transition-all ${
-                      players.length > 0 
-                        ? 'bg-green-500 text-white hover:bg-green-600 shadow-lg' 
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                    }`}
-                  >
-                    Mulai Permainan
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* GAME SCREEN */}
-            {gameState === 'playing' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <div className="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 order-2 lg:order-1 flex flex-col">
-                  <h3 className="text-lg font-semibold text-slate-700 mb-4 flex items-center">
-                    Giliran: <span className="ml-2 text-blue-600 font-bold">{players[currentPlayerIndex].name}</span>
-                  </h3>
-                  
-                  <form onSubmit={handleScoreSubmit} className="flex flex-col flex-1">
-                    <label className="text-sm font-medium text-slate-500 mb-2">Masukkan Skor Tiap Dart (1-3):</label>
-                    
-                    <div className="flex gap-2 mb-2">
-                      <input
-                        ref={inputRef}
-                        type="number"
-                        min="0"
-                        max="180"
-                        value={dart1}
-                        onChange={(e) => setDart1(e.target.value)}
-                        className="w-1/3 text-center text-2xl md:text-3xl font-bold py-4 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
-                        placeholder="D1"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="180"
-                        value={dart2}
-                        onChange={(e) => setDart2(e.target.value)}
-                        className="w-1/3 text-center text-2xl md:text-3xl font-bold py-4 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
-                        placeholder="D2"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="180"
-                        value={dart3}
-                        onChange={(e) => setDart3(e.target.value)}
-                        className="w-1/3 text-center text-2xl md:text-3xl font-bold py-4 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
-                        placeholder="D3"
-                      />
-                    </div>
-                    
-                    <div className="text-center bg-slate-50 rounded-lg py-3 mb-4 border border-slate-200 flex items-center justify-center">
-                      <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Lemparan: </span>
-                      <span className="text-3xl font-black text-blue-600 ml-2">{currentTotal}</span>
-                    </div>
-                    
-                    <div className="grid grid-cols-4 gap-2 mb-6">
-                      {[26, 41, 45, 60, 81, 85, 100, 140].map(val => (
-                        <button
-                          key={val}
-                          type="button"
-                          onClick={() => handleQuickScore(val)}
-                          className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 rounded-lg transition-colors"
-                        >
-                          {val}
-                        </button>
-                      ))}
-                      <button type="button" onClick={() => handleQuickScore(0)} className="col-span-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 rounded-lg">Miss (0)</button>
-                      <button type="button" onClick={() => handleQuickScore(180)} className="col-span-2 bg-red-100 hover:bg-red-200 text-red-700 font-bold py-2 rounded-lg">180!</button>
-                    </div>
-
-                    {errorMsg && <p className="text-red-500 mb-4 text-center font-medium animate-pulse">{errorMsg}</p>}
-
-                    <div className="mt-auto flex flex-col gap-3">
-                       <button
-                        type="submit"
-                        className="w-full bg-blue-600 text-white font-bold text-xl py-4 rounded-xl hover:bg-blue-700 shadow-lg transition-all flex justify-center items-center"
-                      >
-                        Input Skor <ArrowRightIcon className="ml-2 w-6 h-6" />
-                      </button>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={playRematch}
-                          className="flex-1 bg-slate-100 text-slate-700 font-semibold py-3 rounded-xl hover:bg-slate-200 transition-all flex justify-center items-center text-sm"
-                        >
-                          <RotateCcwIcon className="w-4 h-4 mr-2" /> Ulangi Match
-                        </button>
-                        <button
-                          type="button"
-                          onClick={resetGame}
-                          className="flex-1 bg-slate-100 text-red-600 font-semibold py-3 rounded-xl hover:bg-red-50 transition-all flex justify-center items-center text-sm"
-                        >
-                          <UsersIcon className="w-4 h-4 mr-2" /> Ganti Pemain
-                        </button>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-
-                <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 order-1 lg:order-2">
-                  {players.map((player, idx) => (
-                    <div 
-                      key={player.id} 
-                      className={`relative p-5 rounded-2xl border-2 transition-all flex flex-col h-full ${
-                        idx === currentPlayerIndex 
-                          ? 'bg-blue-50 border-blue-500 shadow-md ring-4 ring-blue-100 scale-[1.02]' 
-                          : 'bg-white border-slate-200 opacity-80'
-                      }`}
-                    >
-                      {idx === currentPlayerIndex && (
-                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                          Aktif
-                        </div>
-                      )}
-                      <h3 className="text-lg font-bold text-slate-700 text-center truncate">{player.name}</h3>
-                      <div className="text-center my-4">
-                        <span className={`text-6xl font-black ${
-                          player.score <= 50 ? 'text-red-500' : 
-                          player.score <= 100 ? 'text-orange-500' : 'text-slate-800'
-                        }`}>
-                          {player.score}
-                        </span>
-                      </div>
-                      
-                      <div className="mt-auto bg-slate-50 rounded-lg p-3 max-h-32 overflow-y-auto border border-slate-100">
-                        <p className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wider">Riwayat Lemparan</p>
-                        {player.history.length === 0 ? (
-                          <p className="text-sm text-slate-400 italic">Belum ada lemparan.</p>
-                        ) : (
-                          <div className="flex flex-col gap-1">
-                            {player.history.slice().reverse().map((hist, hIdx) => (
-                              <div key={hIdx} className={`flex justify-between text-sm ${hist.type === 'bust' ? 'text-red-500 font-medium' : 'text-slate-600'}`}>
-                                <span>Ronde {player.history.length - hIdx}</span>
-                                <span>{hist.type === 'bust' ? 'Bust!' : `-${hist.points}`}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* WINNER SCREEN */}
-            {gameState === 'finished' && (
-              <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-yellow-200 text-center max-w-2xl mx-auto">
-                <TrophyIcon className="w-24 h-24 text-yellow-400 mx-auto mb-6 drop-shadow-lg" />
-                <h2 className="text-4xl font-black text-slate-800 mb-2">Permainan Selesai!</h2>
-                <p className="text-xl text-slate-600 mb-8">
-                  Pemenangnya adalah <span className="font-bold text-blue-600 text-3xl block mt-2">{winner?.name}</span>
-                </p>
-
-                <div className="flex flex-col sm:flex-row justify-center gap-4">
-                  <button
-                    onClick={playRematch}
-                    className="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center"
-                  >
-                    <RotateCcwIcon className="w-5 h-5 mr-2" /> Rematch (Skor {startingScore})
-                  </button>
-                  <button
-                    onClick={resetGame}
-                    className="px-8 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300 transition-colors flex items-center justify-center"
-                  >
-                    <UsersIcon className="w-5 h-5 mr-2" /> Ganti Pemain
-                  </button>
-                </div>
-              </div>
-            )}
-
-          </div>
-        </div>
-      );
+    // Validate each dart: 0–60 (max single dart = T20 = 60)
+    for (let i = 0; i < 3; i++) {
+      if (vals[i] !== null && (isNaN(vals[i]) || vals[i] < 0 || vals[i] > 60)) {
+        setError(`Dart ${i+1}: nilai harus antara 0–60`); return;
+      }
     }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
+    const points      = vals.reduce((s, v) => s + (v ?? 0), 0);
+    const dartsThrown = vals.filter(v => v !== null).length;
+    const player      = players[currentIdx];
+    const newScore    = player.score - points;
+    const bust        = isBustScore(newScore);
+
+    // Save full snapshot for undo
+    setUndoStack(prev => [...prev, {
+      playerIdx: currentIdx,
+      snapshot: players.map(p => ({
+        ...p, history:[...p.history], stats:{...p.stats},
+      })),
+    }]);
+
+    // Update the current player
+    const updStats = (s) => ({
+      ...s,
+      totalDarts:  s.totalDarts  + dartsThrown,
+      totalPoints: s.totalPoints + (bust ? 0 : points),
+      busts:       s.busts       + (bust ? 1 : 0),
+      turns:       s.turns       + 1,
+    });
+
+    if (bust) {
+      setBustAnim(true);
+      setTimeout(() => setBustAnim(false), 450);
+      const bustReason = newScore < 0
+        ? 'BUST! Skor melebihi target.'
+        : 'BUST! Sisa 1 tidak bisa di-checkout (Double Out).';
+      setError(bustReason);
+      setPlayers(prev => prev.map((p, i) =>
+        i !== currentIdx ? p : {
+          ...p,
+          history: [...p.history, { points, isBust:true }],
+          stats: updStats(p.stats),
+        }
+      ));
+      setDarts(['','','']);
+      setCurrentIdx(prev => (prev + 1) % players.length);
+      return;
+    }
+
+    // Valid score
+    const updatedPlayers = players.map((p, i) =>
+      i !== currentIdx ? p : {
+        ...p, score: newScore,
+        history: [...p.history, { points, isBust:false }],
+        stats: updStats(p.stats),
+      }
+    );
+    setPlayers(updatedPlayers);
+    setDarts(['','','']);
+
+    if (newScore === 0) {
+      // Leg won
+      const newLegsWon = (updatedPlayers[currentIdx].legsWon || 0) + 1;
+      const afterLeg   = updatedPlayers.map((p, i) =>
+        i !== currentIdx ? p : { ...p, legsWon: newLegsWon }
+      );
+      setPlayers(afterLeg);
+
+      if (newLegsWon >= legsToWin) {
+        setWinner(afterLeg[currentIdx]);
+        setScreen('finished');
+      } else {
+        // Reset scores for next leg, keep leg counts
+        setTimeout(() => {
+          setPlayers(afterLeg.map(p => ({
+            ...p, score:startScore, history:[],
+            stats:{ totalDarts:0, totalPoints:0, busts:0, turns:0 },
+          })));
+          setUndoStack([]); setCurrentIdx(0); setError('');
+        }, 400);
+      }
+    } else {
+      setCurrentIdx(prev => (prev + 1) % players.length);
+    }
+  };
+
+  // ── Undo last turn ────────────────────────────────────────────────────────
+  const undoTurn = () => {
+    if (!undoStack.length) return;
+    const last = undoStack[undoStack.length - 1];
+    setUndoStack(prev => prev.slice(0, -1));
+    setPlayers(last.snapshot);
+    setCurrentIdx(last.playerIdx);
+    setDarts(['','','']); setError('');
+  };
+
+  // ── Quick score buttons ────────────────────────────────────────────────────
+  const quickScore = (v) => {
+    if (v === 0)   setDarts(['0','','']);
+    else if (v === 180) setDarts(['60','60','60']);
+    else           setDarts([String(v),'','']);
+    dart1Ref.current?.focus();
+  };
+
+  const resetGame = () => { setScreen('setup'); setWinner(null); setUndoStack([]); };
+  const rematch   = () => {
+    setPlayers(prev => prev.map(p => mkPlayer(p.id, p.name, startScore)));
+    setCurrentIdx(0); setUndoStack([]); setDarts(['','','']);
+    setWinner(null); setError(''); setScreen('playing');
+  };
+
+  const currentPlayer = players[currentIdx];
+  const currentTotal  = darts.reduce((s, d) => s + (parseInt(d) || 0), 0);
+  const remainAfter   = currentPlayer ? currentPlayer.score - currentTotal : 0;
+  const willBust      = currentPlayer && isBustScore(remainAfter) && currentTotal > 0;
+  const willFinish    = currentPlayer && remainAfter === 0 && currentTotal > 0;
+  const checkout      = currentPlayer && currentPlayer.score <= 170
+    ? CHECKOUTS[currentPlayer.score] : null;
+
+  // ─── SETUP SCREEN ──────────────────────────────────────────────────────────
+  if (screen === 'setup') return (
+    <div className="anim-fade" style={{minHeight:'100vh',padding:'24px 16px',maxWidth:680,margin:'0 auto'}}>
+      {/* Header */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:32}}>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <span style={{color:'var(--accent)'}}><TargetIcon/></span>
+          <div>
+            <h1 className="font-display" style={{fontSize:34,color:'var(--accent)',lineHeight:1}}>DART SCORER</h1>
+            <p style={{fontSize:11,color:'var(--muted)',letterSpacing:'0.12em'}}>PRO EDITION</p>
+          </div>
+        </div>
+        <button className="theme-toggle" onClick={()=>setLightMode(m=>!m)}>
+          {lightMode ? '🌙 Dark' : '☀️ Light'}
+        </button>
+      </div>
+
+      {/* Settings card */}
+      <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:16,padding:24,marginBottom:14}}>
+        <p style={{fontSize:11,letterSpacing:'0.15em',color:'var(--muted)',textTransform:'uppercase',marginBottom:16}}>Pengaturan Permainan</p>
+
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
+          {/* Start score */}
+          <div>
+            <p style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>Skor Awal</p>
+            <div style={{display:'flex',gap:8}}>
+              {[301,501,701].map(s=>(
+                <button key={s} onClick={()=>setStartScore(s)} style={{
+                  flex:1,padding:'10px 0',borderRadius:10,cursor:'pointer',
+                  background:startScore===s?'var(--accent)':'var(--surface2)',
+                  color:startScore===s?'var(--accent-text)':'var(--text)',
+                  border:startScore===s?'none':'1px solid var(--border)',
+                  fontFamily:'Bebas Neue',fontSize:18,transition:'all 0.15s',
+                }}>{s}</button>
+              ))}
+            </div>
+          </div>
+          {/* Legs */}
+          <div>
+            <p style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>Legs (Best of)</p>
+            <div style={{display:'flex',gap:8}}>
+              {[1,3,5,7].map(l=>{
+                const needed=Math.ceil(l/2);
+                return (
+                  <button key={l} onClick={()=>setLegsToWin(needed)} style={{
+                    flex:1,padding:'10px 0',borderRadius:10,cursor:'pointer',
+                    background:legsToWin===needed?'var(--accent)':'var(--surface2)',
+                    color:legsToWin===needed?'var(--accent-text)':'var(--text)',
+                    border:legsToWin===needed?'none':'1px solid var(--border)',
+                    fontFamily:'Bebas Neue',fontSize:18,transition:'all 0.15s',
+                  }}>{l}</button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Double out toggle */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:'var(--surface2)',borderRadius:10,padding:'12px 16px'}}>
+          <div>
+            <p style={{fontSize:14,fontWeight:600}}>Double Out</p>
+            <p style={{fontSize:11,color:'var(--muted)'}}>
+              Sisa 0 = menang &nbsp;|&nbsp; Sisa 1 = Bust (tidak bisa di-checkout)
+            </p>
+          </div>
+          <button onClick={()=>setDoubleOut(d=>!d)} style={{
+            width:48,height:26,borderRadius:13,border:'none',cursor:'pointer',
+            background:doubleOut?'var(--accent)':'var(--border)',
+            position:'relative',transition:'background 0.2s',flexShrink:0,
+          }}>
+            <span style={{
+              position:'absolute',top:3,left:doubleOut?25:3,
+              width:20,height:20,borderRadius:'50%',
+              background:doubleOut?'var(--accent-text)':'var(--muted)',transition:'left 0.2s',
+            }}/>
+          </button>
+        </div>
+      </div>
+
+      {/* Players card */}
+      <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:16,padding:24}}>
+        <p style={{fontSize:11,letterSpacing:'0.15em',color:'var(--muted)',textTransform:'uppercase',marginBottom:16}}>
+          Pemain ({players.length}/8)
+        </p>
+        <form onSubmit={addPlayer} style={{display:'flex',gap:10,marginBottom:14}}>
+          <input
+            type="text" placeholder="Nama pemain..." value={newName}
+            onChange={e=>setNewName(e.target.value)}
+            style={{
+              flex:1,background:'var(--surface2)',border:'1px solid var(--border)',
+              borderRadius:10,padding:'10px 14px',color:'var(--text)',fontSize:14,outline:'none',
+            }}
+          />
+          <button type="submit" disabled={!newName.trim()||players.length>=8} style={{
+            padding:'10px 20px',borderRadius:10,border:'none',cursor:'pointer',
+            background:'var(--accent)',color:'var(--accent-text)',fontWeight:700,fontSize:14,
+            opacity:(!newName.trim()||players.length>=8)?0.4:1,
+          }}>+ Tambah</button>
+        </form>
+
+        {players.length===0
+          ? <p style={{textAlign:'center',color:'var(--muted)',fontSize:13,padding:'12px 0'}}>Belum ada pemain</p>
+          : players.map((p,i)=>(
+            <div key={p.id} style={{
+              display:'flex',justifyContent:'space-between',alignItems:'center',
+              background:'var(--surface2)',borderRadius:10,padding:'10px 14px',
+              border:'1px solid var(--border)',marginBottom:8,
+            }}>
+              <div style={{display:'flex',alignItems:'center',gap:10}}>
+                <span className="font-display" style={{fontSize:18,color:'var(--accent)',minWidth:20}}>{i+1}</span>
+                <span style={{fontWeight:600}}>{p.name}</span>
+              </div>
+              <button onClick={()=>setPlayers(prev=>prev.filter(x=>x.id!==p.id))} style={{
+                background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:20,lineHeight:1,padding:'0 4px',
+              }}>×</button>
+            </div>
+          ))
+        }
+
+        <button onClick={startGame} disabled={!players.length} style={{
+          width:'100%',marginTop:16,padding:'14px',borderRadius:12,
+          background:players.length?'var(--accent)':'var(--border)',
+          color:players.length?'var(--accent-text)':'var(--muted)',
+          border:'none',cursor:players.length?'pointer':'not-allowed',
+          fontFamily:'Bebas Neue',fontSize:22,letterSpacing:'0.05em',transition:'all 0.2s',
+        }}>MULAI PERMAINAN →</button>
+      </div>
+    </div>
+  );
+
+  // ─── PLAYING SCREEN ────────────────────────────────────────────────────────
+  if (screen === 'playing') return (
+    <div style={{minHeight:'100vh',padding:'16px',maxWidth:1000,margin:'0 auto'}}>
+
+      {/* Topbar */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <span style={{color:'var(--accent)'}}><TargetIcon/></span>
+          <span className="font-display" style={{fontSize:22,color:'var(--accent)'}}>DART SCORER</span>
+          {doubleOut && <span style={{fontSize:10,background:'var(--surface2)',border:'1px solid var(--border)',borderRadius:6,padding:'2px 7px',color:'var(--muted)',letterSpacing:'0.08em'}}>DOUBLE OUT</span>}
+        </div>
+        <div style={{display:'flex',gap:8}}>
+          <button onClick={undoTurn} disabled={!undoStack.length} style={{
+            padding:'7px 13px',borderRadius:9,cursor:undoStack.length?'pointer':'not-allowed',
+            border:'1px solid var(--border)',background:'var(--surface)',
+            color:undoStack.length?'var(--text)':'var(--muted)',fontSize:13,fontWeight:600,
+          }}>↩ Undo</button>
+          <button onClick={rematch} style={{
+            padding:'7px 13px',borderRadius:9,border:'1px solid var(--border)',
+            background:'var(--surface)',color:'var(--text)',cursor:'pointer',fontSize:13,fontWeight:600,
+          }}>⟳ Ulang</button>
+          <button onClick={resetGame} style={{
+            padding:'7px 13px',borderRadius:9,border:'1px solid var(--border)',
+            background:'var(--surface)',color:'var(--accent2)',cursor:'pointer',fontSize:13,fontWeight:600,
+          }}>✕ Reset</button>
+          <button className="theme-toggle" onClick={()=>setLightMode(m=>!m)}>
+            {lightMode ? '🌙' : '☀️'}
+          </button>
+        </div>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'320px 1fr',gap:16,alignItems:'start'}}>
+
+        {/* ── Input panel ── */}
+        <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:16,padding:20}}>
+          {/* Current player */}
+          <div style={{marginBottom:16}}>
+            <p style={{fontSize:11,color:'var(--muted)',letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:4}}>Giliran</p>
+            <p className="font-display" style={{fontSize:30,color:'var(--accent)',lineHeight:1}}>{currentPlayer?.name}</p>
+            {legsToWin > 1 && (
+              <div style={{display:'flex',gap:4,marginTop:6,alignItems:'center'}}>
+                {Array.from({length:legsToWin}).map((_,j)=>(
+                  <span key={j} className={`leg-pip${j<(currentPlayer?.legsWon||0)?' won':''}`}/>
+                ))}
+                <span style={{fontSize:10,color:'var(--muted)',marginLeft:4}}>legs won</span>
+              </div>
+            )}
+          </div>
+
+          {/* Checkout suggestion */}
+          {checkout && (
+            <div style={{
+              background:'linear-gradient(135deg,#e53935,#b71c1c)',color:'#ffffff',
+              borderRadius:10,padding:'10px 14px',marginBottom:14,
+              display:'flex',alignItems:'center',gap:10,
+            }}>
+              <span style={{fontSize:20}}>🎯</span>
+              <div>
+                <p style={{fontSize:10,fontWeight:800,letterSpacing:'0.12em',textTransform:'uppercase'}}>CHECKOUT</p>
+                <p className="font-display" style={{fontSize:17,letterSpacing:'0.04em'}}>{checkout}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Dart inputs — max 60 each */}
+          <p style={{fontSize:11,color:'var(--muted)',marginBottom:8,letterSpacing:'0.08em',textTransform:'uppercase'}}>
+            Skor Tiap Dart (0 – 60)
+          </p>
+          <div style={{display:'flex',gap:8,marginBottom:8}}>
+            {[0,1,2].map(i=>(
+              <input
+                key={i}
+                ref={i===0?dart1Ref:null}
+                type="number" min="0" max="60"
+                placeholder={`D${i+1}`}
+                value={darts[i]}
+                onChange={e=>{
+                  const v=e.target.value;
+                  setDarts(prev=>{const n=[...prev];n[i]=v;return n;});
+                  setError('');
+                }}
+                onKeyDown={e=>{ if(e.key==='Enter'&&i===2) submitScore(); }}
+                style={{
+                  width:'33%',textAlign:'center',
+                  fontFamily:'Bebas Neue',fontSize:30,
+                  padding:'12px 4px',borderRadius:10,
+                  background:'var(--surface2)',
+                  border:`2px solid ${willBust?'var(--accent2)':willFinish?'var(--green)':'var(--border)'}`,
+                  color:willBust?'var(--accent2)':willFinish?'var(--green)':'var(--text)',
+                  outline:'none',transition:'border-color 0.2s, color 0.2s',
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Running total + remaining */}
+          <div style={{
+            background:'var(--surface2)',borderRadius:10,padding:'10px 14px',
+            display:'flex',justifyContent:'space-between',alignItems:'center',
+            marginBottom:14,
+            border:`1px solid ${willBust?'var(--accent2)':willFinish?'var(--green)':'transparent'}`,
+            transition:'border-color 0.2s',
+          }}>
+            <div>
+              <p style={{fontSize:10,color:'var(--muted)'}}>Total lemparan</p>
+              <p className="font-display" style={{fontSize:24,color:willBust?'var(--accent2)':willFinish?'var(--green)':'var(--text)'}}>{currentTotal}</p>
+            </div>
+            <div style={{textAlign:'right'}}>
+              <p style={{fontSize:10,color:'var(--muted)'}}>Sisa setelah</p>
+              <p className="font-display" style={{fontSize:24,color:willBust?'var(--accent2)':willFinish?'var(--green)':'var(--text)'}}>
+                {currentTotal>0 ? (willBust?'BUST':willFinish?'WIN!':remainAfter) : '–'}
+              </p>
+            </div>
+          </div>
+
+          {/* Quick score buttons */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6,marginBottom:14}}>
+            {[26,41,45,60,81,85,100,140].map(v=>(
+              <button key={v} type="button" onClick={()=>quickScore(v)} style={{
+                padding:'8px 4px',borderRadius:8,border:'1px solid var(--border)',
+                background:'var(--surface2)',color:'var(--text)',cursor:'pointer',fontSize:13,fontWeight:600,
+              }}>{v}</button>
+            ))}
+            <button type="button" onClick={()=>quickScore(0)} style={{
+              gridColumn:'span 2',padding:'8px',borderRadius:8,
+              border:'1px solid var(--border)',background:'var(--surface2)',
+              color:'var(--muted)',cursor:'pointer',fontSize:13,fontWeight:600,
+            }}>Miss (0)</button>
+            <button type="button" onClick={()=>quickScore(180)} style={{
+              gridColumn:'span 2',padding:'8px',borderRadius:8,
+              border:'1px solid var(--accent2)',background:'rgba(255,71,87,0.1)',
+              color:'var(--accent2)',cursor:'pointer',fontSize:13,fontWeight:700,
+            }}>180!</button>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <p className={bustAnim?'anim-bust':''} style={{
+              color:error.includes('BUST')?'var(--accent2)':'#facc15',
+              textAlign:'center',fontSize:13,fontWeight:700,
+              marginBottom:10,padding:'8px 12px',borderRadius:8,
+              background:error.includes('BUST')?'rgba(255,71,87,0.1)':'rgba(250,204,21,0.08)',
+            }}>{error}</p>
+          )}
+
+          <button onClick={submitScore} style={{
+            width:'100%',padding:'13px',borderRadius:12,border:'none',cursor:'pointer',
+            background:'var(--accent)',color:'var(--accent-text)',
+            fontFamily:'Bebas Neue',fontSize:22,letterSpacing:'0.05em',
+          }}>INPUT SKOR →</button>
+        </div>
+
+        {/* ── Scoreboard ── */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(175px,1fr))',gap:12}}>
+          {players.map((p,i)=>{
+            const isActive = i === currentIdx;
+            const avgPerTurn = p.stats.turns>0 ? (p.stats.totalPoints/p.stats.turns).toFixed(1) : '–';
+            return (
+              <div key={p.id} className={isActive?'card-active':''} style={{
+                background:'var(--surface)',borderRadius:14,padding:16,
+                border:'1px solid var(--border)',transition:'all 0.25s',
+                position:'relative',
+              }}>
+                {isActive && (
+                  <div style={{
+                    position:'absolute',top:-12,left:'50%',transform:'translateX(-50%)',
+                    background:'var(--accent)',color:'var(--accent-text)',fontSize:10,fontWeight:800,
+                    padding:'3px 10px',borderRadius:20,letterSpacing:'0.08em',
+                    textTransform:'uppercase',whiteSpace:'nowrap',
+                  }}>▶ GILIRAN</div>
+                )}
+
+                <p style={{fontSize:13,fontWeight:700,textAlign:'center',marginBottom:4,color:isActive?'var(--accent)':'var(--text)'}}>{p.name}</p>
+
+                {legsToWin>1 && (
+                  <div style={{display:'flex',justifyContent:'center',gap:4,marginBottom:8}}>
+                    {Array.from({length:legsToWin}).map((_,j)=>(
+                      <span key={j} className={`leg-pip${j<p.legsWon?' won':''}`}/>
+                    ))}
+                  </div>
+                )}
+
+                {/* Score — re-animates on change */}
+                <div key={p.score} className={isActive?'anim-score':''} style={{textAlign:'center',margin:'6px 0 10px'}}>
+                  <span className="font-display" style={{
+                    fontSize:52,lineHeight:1,
+                    color:p.score<=50?'var(--accent2)':p.score<=100?'#facc15':isActive?'var(--accent)':'var(--text)',
+                  }}>{p.score}</span>
+                </div>
+
+                {/* Mini stats */}
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}>
+                  <div style={{textAlign:'center'}}>
+                    <p style={{fontSize:10,color:'var(--muted)'}}>Avg</p>
+                    <p style={{fontSize:13,fontWeight:700}}>{avgPerTurn}</p>
+                  </div>
+                  <div style={{textAlign:'center'}}>
+                    <p style={{fontSize:10,color:'var(--muted)'}}>Bust</p>
+                    <p style={{fontSize:13,fontWeight:700,color:p.stats.busts>0?'var(--accent2)':'var(--text)'}}>{p.stats.busts}</p>
+                  </div>
+                  <div style={{textAlign:'center'}}>
+                    <p style={{fontSize:10,color:'var(--muted)'}}>Turns</p>
+                    <p style={{fontSize:13,fontWeight:700}}>{p.stats.turns}</p>
+                  </div>
+                </div>
+
+                {/* History */}
+                <div style={{background:'var(--bg)',borderRadius:8,padding:'8px 10px',maxHeight:88,overflowY:'auto'}}>
+                  {p.history.length===0
+                    ? <p style={{fontSize:11,color:'var(--muted)',textAlign:'center'}}>–</p>
+                    : [...p.history].reverse().slice(0,8).map((h,j)=>(
+                      <div key={j} style={{
+                        display:'flex',justifyContent:'space-between',
+                        fontSize:12,marginBottom:2,
+                        color:h.isBust?'var(--accent2)':'var(--muted)',
+                      }}>
+                        <span>R{p.history.length-j}</span>
+                        <span style={{fontWeight:600}}>{h.isBust?'BUST':`-${h.points}`}</span>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ─── WINNER SCREEN ────────────────────────────────────────────────────────
+  if (screen === 'finished') return (
+    <>
+      <Confetti/>
+      <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
+        <div className="anim-win" style={{
+          background:'var(--surface)',border:'2px solid var(--accent)',
+          borderRadius:24,padding:'48px 40px',textAlign:'center',
+          maxWidth:480,width:'100%',
+          boxShadow:'0 0 80px var(--shadow)',
+        }}>
+          <div style={{fontSize:72,marginBottom:16}}>🏆</div>
+          <p style={{fontSize:11,color:'var(--muted)',letterSpacing:'0.15em',textTransform:'uppercase',marginBottom:6}}>Pemenang</p>
+          <h1 className="font-display" style={{fontSize:56,color:'var(--accent)',lineHeight:1,marginBottom:6}}>{winner?.name}</h1>
+          <p style={{color:'var(--muted)',fontSize:13,marginBottom:32}}>
+            {legsToWin>1 ? `Memenangkan ${winner?.legsWon} leg!` : `Skor awal: ${startScore}`}
+            {doubleOut && ' · Double Out'}
+          </p>
+
+          {/* Final stats table */}
+          <div style={{display:'grid',gridTemplateColumns:`repeat(${Math.min(players.length,3)},1fr)`,gap:10,marginBottom:32}}>
+            {[...players].sort((a,b)=>b.legsWon-a.legsWon||(a.score-b.score)).map(p=>(
+              <div key={p.id} style={{
+                background:'var(--surface2)',borderRadius:10,padding:'12px 8px',
+                border:p.id===winner?.id?'1px solid var(--accent)':'1px solid var(--border)',
+              }}>
+                <p style={{fontSize:12,fontWeight:700,marginBottom:4,color:p.id===winner?.id?'var(--accent)':'var(--text)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.name}</p>
+                <p className="font-display" style={{fontSize:28,color:'var(--text)'}}>
+                  {p.stats.turns>0?(p.stats.totalPoints/p.stats.turns).toFixed(1):'–'}
+                </p>
+                <p style={{fontSize:10,color:'var(--muted)'}}>avg/turn</p>
+                {legsToWin>1 && <p style={{fontSize:11,color:'var(--accent)',marginTop:4}}>{p.legsWon} leg{p.legsWon!==1?'s':''}</p>}
+              </div>
+            ))}
+          </div>
+
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            <button onClick={rematch} style={{
+              padding:'14px',borderRadius:12,border:'none',cursor:'pointer',
+              background:'var(--accent)',color:'var(--accent-text)',
+              fontFamily:'Bebas Neue',fontSize:22,letterSpacing:'0.05em',
+            }}>⟳ REMATCH ({startScore})</button>
+            <button onClick={resetGame} style={{
+              padding:'14px',borderRadius:12,
+              border:'1px solid var(--border)',cursor:'pointer',
+              background:'transparent',color:'var(--muted)',
+              fontFamily:'Bebas Neue',fontSize:18,letterSpacing:'0.05em',
+            }}>✕ GANTI PEMAIN</button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
 </body>
 </html>
