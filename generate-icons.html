@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Icons</title></head>
+<body>
+<canvas id="c192" width="192" height="192" style="display:none"></canvas>
+<canvas id="c512" width="512" height="512" style="display:none"></canvas>
+<script>
+function drawIcon(canvas) {
+  const s = canvas.width;
+  const ctx = canvas.getContext('2d');
+  const cx = s / 2, cy = s / 2;
+
+  // Background
+  ctx.fillStyle = '#0e0f13';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, s, s, s * 0.18);
+  ctx.fill();
+
+  // Dartboard rings
+  const rings = [
+    { r: s * 0.42, color: '#1e2029' },
+    { r: s * 0.32, color: '#2a2d3a' },
+    { r: s * 0.22, color: '#e53935' },
+    { r: s * 0.12, color: '#1e2029' },
+    { r: s * 0.055, color: '#e53935' },
+  ];
+  rings.forEach(({ r, color }) => {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  });
+
+  // Cross lines on board
+  ctx.strokeStyle = '#2a2d3a';
+  ctx.lineWidth = s * 0.008;
+  for (let a = 0; a < 360; a += 18) {
+    const rad = (a * Math.PI) / 180;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(rad) * s * 0.42, cy + Math.sin(rad) * s * 0.42);
+    ctx.stroke();
+  }
+
+  // Dart needle
+  const dartAngle = -Math.PI / 4;
+  const tipX = cx + Math.cos(dartAngle) * s * 0.06;
+  const tipY = cy + Math.sin(dartAngle) * s * 0.06;
+  const tailX = cx + Math.cos(dartAngle + Math.PI) * s * 0.38;
+  const tailY = cy + Math.sin(dartAngle + Math.PI) * s * 0.38;
+
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = s * 0.025;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(tipX, tipY);
+  ctx.lineTo(tailX, tailY);
+  ctx.stroke();
+
+  // Dart tip
+  ctx.fillStyle = '#e53935';
+  ctx.beginPath();
+  ctx.arc(tipX, tipY, s * 0.022, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Dart flights (tail)
+  ctx.fillStyle = '#e53935';
+  ctx.beginPath();
+  ctx.moveTo(tailX, tailY);
+  ctx.lineTo(tailX + Math.cos(dartAngle - Math.PI / 2) * s * 0.08, tailY + Math.sin(dartAngle - Math.PI / 2) * s * 0.08);
+  ctx.lineTo(tailX + Math.cos(dartAngle) * s * 0.12, tailY + Math.sin(dartAngle) * s * 0.12);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(tailX, tailY);
+  ctx.lineTo(tailX + Math.cos(dartAngle + Math.PI / 2) * s * 0.08, tailY + Math.sin(dartAngle + Math.PI / 2) * s * 0.08);
+  ctx.lineTo(tailX + Math.cos(dartAngle) * s * 0.12, tailY + Math.sin(dartAngle) * s * 0.12);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function download(canvas, name) {
+  const a = document.createElement('a');
+  a.download = name;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+const c192 = document.getElementById('c192');
+const c512 = document.getElementById('c512');
+drawIcon(c192);
+drawIcon(c512);
+
+// Show preview
+document.body.style.background = '#333';
+document.body.style.padding = '20px';
+c192.style.display = 'block';
+c512.style.display = 'block';
+c192.style.margin = '10px';
+c512.style.margin = '10px';
+
+const btn192 = document.createElement('button');
+btn192.textContent = 'Download icon-192.png';
+btn192.onclick = () => download(c192, 'icon-192.png');
+btn192.style.cssText = 'display:block;margin:10px;padding:10px 20px;font-size:16px;cursor:pointer';
+
+const btn512 = document.createElement('button');
+btn512.textContent = 'Download icon-512.png';
+btn512.onclick = () => download(c512, 'icon-512.png');
+btn512.style.cssText = 'display:block;margin:10px;padding:10px 20px;font-size:16px;cursor:pointer';
+
+document.body.appendChild(btn192);
+document.body.appendChild(btn512);
+</script>
+</body>
+</html>

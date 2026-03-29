@@ -4,10 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Dart Scorer Pro</title>
+
+  <!-- PWA Meta -->
+  <meta name="application-name" content="Dart Scorer Pro">
+  <meta name="description" content="Aplikasi pencatat skor dart profesional dengan checkout table">
+  <meta name="theme-color" content="#e53935">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Dart Pro">
+
+  <!-- PWA Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- Fonts & Scripts -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* ── DARK (default) ── */
     :root {
@@ -107,6 +123,34 @@ const CO = {
 const TargetIcon = () => (
   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+  </svg>
+);
+
+const AppLogo = ({size=40}) => (
+  <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    {/* Background circle */}
+    <circle cx="50" cy="50" r="48" fill="#0e0f13" stroke="#e53935" strokeWidth="2"/>
+    {/* Dartboard rings */}
+    <circle cx="50" cy="50" r="38" fill="#1e2029"/>
+    <circle cx="50" cy="50" r="28" fill="#2a2d3a"/>
+    <circle cx="50" cy="50" r="19" fill="#e53935"/>
+    <circle cx="50" cy="50" r="11" fill="#1e2029"/>
+    <circle cx="50" cy="50" r="5"  fill="#e53935"/>
+    {/* Sector lines */}
+    {[0,18,36,54,72,90,108,126,144,162].map((a,i) => {
+      const rad = (a * Math.PI) / 180;
+      return <line key={i}
+        x1={50} y1={50}
+        x2={50 + Math.cos(rad)*38} y2={50 + Math.sin(rad)*38}
+        stroke="#0e0f13" strokeWidth="1" opacity="0.6"/>;
+    })}
+    {/* Dart */}
+    <line x1="68" y1="32" x2="46" y2="54" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+    {/* Dart tip */}
+    <circle cx="46" cy="54" r="2.5" fill="#e53935"/>
+    {/* Dart flights */}
+    <polygon points="68,32 76,26 72,36" fill="#e53935"/>
+    <polygon points="68,32 74,40 62,36" fill="#c62828"/>
   </svg>
 );
 
@@ -330,7 +374,7 @@ function App() {
       {/* Header */}
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:32}}>
         <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <span style={{color:'var(--accent)'}}><TargetIcon/></span>
+          <AppLogo size={42}/>
           <div>
             <h1 className="fd" style={{fontSize:34,color:'var(--accent)',lineHeight:1}}>DART SCORER</h1>
             <p style={{fontSize:11,color:'var(--muted)',letterSpacing:'.12em'}}>PRO EDITION</p>
@@ -479,8 +523,8 @@ function App() {
       {/* Topbar */}
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
         <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <span style={{color:'var(--accent)'}}><TargetIcon/></span>
-          <span className="fd" style={{fontSize:22,color:'var(--accent)'}}>DART SCORER</span>
+          <AppLogo size={32}/>
+          <span className="fd" style={{fontSize:22,color:'var(--accent)'}}>DART SCORER PRO</span>
           {dblOut && <span style={{fontSize:10,background:'var(--surface2)',border:'1px solid var(--border)',
             borderRadius:6,padding:'2px 7px',color:'var(--muted)',letterSpacing:'.08em'}}>DOUBLE OUT</span>}
         </div>
@@ -721,6 +765,14 @@ function App() {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
 </script>
 </body>
 </html>
