@@ -81,6 +81,16 @@
 <script type="text/babel">
 const {useState,useEffect,useRef} = React;
 
+const useIsMobile = () => {
+  const [mobile, setMobile] = useState(window.innerWidth < 700);
+  useEffect(() => {
+    const fn = () => setMobile(window.innerWidth < 700);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+  return mobile;
+};
+
 /* ── CHECKOUT TABLE ─────────────────────────────────────────── */
 const CO = {
   170:"T20 T20 Bull",167:"T20 T19 Bull",164:"T20 T18 Bull",161:"T20 T17 Bull",
@@ -182,6 +192,7 @@ const mkP = (id, name, score) => ({
 
 /* ── APP ─────────────────────────────────────────────────────── */
 function App() {
+  const isMobile = useIsMobile();
   const [screen,  setScreen]  = useState('setup');
   const [start,   setStart]   = useState(501);
   const [legs,    setLegs]    = useState(1);
@@ -485,7 +496,7 @@ function App() {
   /* PLAYING SCREEN                                               */
   /* ════════════════════════════════════════════════════════════ */
   if(screen==='playing') return (
-    <div style={{minHeight:'100vh',padding:'16px',maxWidth:1000,margin:'0 auto'}}>
+    <div style={{minHeight:'100vh',padding:isMobile?'10px 10px 24px':16,maxWidth:1000,margin:'0 auto'}}>
 
       {/* Double-Out Confirmation Dialog */}
       {dlg && (
@@ -493,16 +504,16 @@ function App() {
           background:'rgba(0,0,0,0.75)',backdropFilter:'blur(4px)',
           display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
           <div className="ap" style={{background:'var(--surface)',border:'2px solid var(--accent)',
-            borderRadius:20,padding:'32px 28px',textAlign:'center',maxWidth:340,width:'100%',
+            borderRadius:20,padding:'28px 20px',textAlign:'center',maxWidth:340,width:'100%',
             boxShadow:'0 0 60px var(--shadow)'}}>
-            <div style={{fontSize:48,marginBottom:12}}>🎯</div>
-            <p className="fd" style={{fontSize:28,color:'var(--accent)',marginBottom:8}}>CHECKOUT!</p>
-            <p style={{fontSize:14,color:'var(--muted)',marginBottom:6}}>
-              Sisa skor: <strong style={{color:'var(--text)',fontSize:18}}>{dlg.prevScore}</strong>
+            <div style={{fontSize:40,marginBottom:10}}>🎯</div>
+            <p className="fd" style={{fontSize:26,color:'var(--accent)',marginBottom:6}}>CHECKOUT!</p>
+            <p style={{fontSize:13,color:'var(--muted)',marginBottom:4}}>
+              Sisa skor: <strong style={{color:'var(--text)',fontSize:17}}>{dlg.prevScore}</strong>
             </p>
-            <p style={{fontSize:13,color:'var(--muted)',marginBottom:24,lineHeight:1.6}}>
+            <p style={{fontSize:12,color:'var(--muted)',marginBottom:20,lineHeight:1.6}}>
               Total lemparan: <strong style={{color:'var(--text)'}}>{dlg.pts}</strong><br/>
-              Apakah dart yang mencetak checkout berupa <strong style={{color:'var(--accent)'}}>Double</strong>?
+              Apakah dart checkout berupa <strong style={{color:'var(--accent)'}}>Double</strong>?
             </p>
             <div style={{display:'flex',gap:10}}>
               <button onClick={()=>handleDlg(false)} style={{
@@ -521,58 +532,77 @@ function App() {
       )}
 
       {/* Topbar */}
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <AppLogo size={32}/>
-          <span className="fd" style={{fontSize:22,color:'var(--accent)'}}>DART SCORER PRO</span>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+        <div style={{display:'flex',alignItems:'center',gap:6}}>
+          <AppLogo size={isMobile?26:32}/>
+          {!isMobile && <span className="fd" style={{fontSize:20,color:'var(--accent)'}}>DART SCORER PRO</span>}
           {dblOut && <span style={{fontSize:10,background:'var(--surface2)',border:'1px solid var(--border)',
-            borderRadius:6,padding:'2px 7px',color:'var(--muted)',letterSpacing:'.08em'}}>DOUBLE OUT</span>}
+            borderRadius:6,padding:'2px 7px',color:'var(--muted)',letterSpacing:'.08em'}}>DBL OUT</span>}
         </div>
-        <div style={{display:'flex',gap:8}}>
+        <div style={{display:'flex',gap:6}}>
           <button className="tbtn" onClick={doUndo} disabled={!undo.length}
-            style={{color:undo.length?'var(--text)':'var(--muted)',cursor:undo.length?'pointer':'not-allowed'}}>
-            ↩ Undo
+            style={{color:undo.length?'var(--text)':'var(--muted)',cursor:undo.length?'pointer':'not-allowed',
+              padding:isMobile?'6px 10px':'7px 13px'}}>
+            ↩{!isMobile&&' Undo'}
           </button>
-          <button className="tbtn" onClick={rematch}>⟳ Ulang</button>
-          <button className="tbtn" onClick={resetGame} style={{color:'var(--red2)'}}>✕ Reset</button>
-          <button className="tbtn" onClick={()=>setLight(l=>!l)}>{light?'🌙':'☀️'}</button>
+          <button className="tbtn" onClick={rematch} style={{padding:isMobile?'6px 10px':'7px 13px'}}>⟳{!isMobile&&' Ulang'}</button>
+          <button className="tbtn" onClick={resetGame} style={{color:'var(--red2)',padding:isMobile?'6px 10px':'7px 13px'}}>✕{!isMobile&&' Reset'}</button>
+          <button className="tbtn" onClick={()=>setLight(l=>!l)} style={{padding:isMobile?'6px 10px':'7px 13px'}}>{light?'🌙':'☀️'}</button>
         </div>
       </div>
 
-      <div style={{display:'grid',gridTemplateColumns:'320px 1fr',gap:16,alignItems:'start'}}>
+      <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'320px 1fr',gap:12,alignItems:'start'}}>
 
         {/* ── Input Panel ── */}
-        <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:16,padding:20}}>
+        <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:16,padding:isMobile?14:20}}>
 
           {/* Current player name */}
-          <div style={{marginBottom:14}}>
-            <p style={{fontSize:11,color:'var(--muted)',letterSpacing:'.12em',textTransform:'uppercase',marginBottom:4}}>Giliran</p>
-            <p className="fd" style={{fontSize:30,color:'var(--accent)',lineHeight:1}}>{cur?.name}</p>
-            {legs>1 && (
-              <div style={{display:'flex',gap:4,marginTop:6,alignItems:'center'}}>
-                {Array.from({length:legs}).map((_,j)=>(
-                  <span key={j} className={`pip${j<(cur?.legsWon||0)?' on':''}`}/>
-                ))}
-                <span style={{fontSize:10,color:'var(--muted)',marginLeft:4}}>legs won</span>
+          <div style={{marginBottom:isMobile?8:14}}>
+            {isMobile ? (
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                <div>
+                  <p style={{fontSize:10,color:'var(--muted)',letterSpacing:'.12em',textTransform:'uppercase'}}>Giliran</p>
+                  <p className="fd" style={{fontSize:26,color:'var(--accent)',lineHeight:1}}>{cur?.name}</p>
+                </div>
+                {legs>1 && (
+                  <div style={{display:'flex',gap:4,alignItems:'center'}}>
+                    {Array.from({length:legs}).map((_,j)=>(
+                      <span key={j} className={`pip${j<(cur?.legsWon||0)?' on':''}`}/>
+                    ))}
+                  </div>
+                )}
               </div>
+            ) : (
+              <>
+                <p style={{fontSize:11,color:'var(--muted)',letterSpacing:'.12em',textTransform:'uppercase',marginBottom:4}}>Giliran</p>
+                <p className="fd" style={{fontSize:30,color:'var(--accent)',lineHeight:1}}>{cur?.name}</p>
+                {legs>1 && (
+                  <div style={{display:'flex',gap:4,marginTop:6,alignItems:'center'}}>
+                    {Array.from({length:legs}).map((_,j)=>(
+                      <span key={j} className={`pip${j<(cur?.legsWon||0)?' on':''}`}/>
+                    ))}
+                    <span style={{fontSize:10,color:'var(--muted)',marginLeft:4}}>legs won</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
           {/* Checkout suggestion — only shown when score <= 170 */}
           {checkout && (
             <div style={{background:'linear-gradient(135deg,#e53935,#b71c1c)',color:'#fff',
-              borderRadius:10,padding:'10px 14px',marginBottom:14,
+              borderRadius:10,padding:'8px 12px',marginBottom:isMobile?8:14,
               display:'flex',alignItems:'center',gap:10}}>
-              <span style={{fontSize:20}}>🎯</span>
+              <span style={{fontSize:18}}>🎯</span>
               <div>
                 <p style={{fontSize:10,fontWeight:800,letterSpacing:'.12em',textTransform:'uppercase'}}>CHECKOUT</p>
-                <p className="fd" style={{fontSize:17,letterSpacing:'.04em'}}>{checkout}</p>
+                <p className="fd" style={{fontSize:16,letterSpacing:'.04em'}}>{checkout}</p>
               </div>
             </div>
           )}
 
           {/* Dart inputs — max 60 per dart */}
-          <p style={{fontSize:11,color:'var(--muted)',marginBottom:8,letterSpacing:'.08em',textTransform:'uppercase'}}>
+          <p style={{fontSize:11,color:'var(--muted)',marginBottom:6,letterSpacing:'.08em',textTransform:'uppercase'}}>
             Skor Tiap Dart (0 – 60)
           </p>
           <div style={{display:'flex',gap:8,marginBottom:8}}>
@@ -590,8 +620,8 @@ function App() {
                 onKeyDown={e=>{ if(e.key==='Enter'&&i===2) submit(); }}
                 style={{
                   width:'33%',textAlign:'center',
-                  fontFamily:'Bebas Neue',fontSize:30,
-                  padding:'12px 4px',borderRadius:10,
+                  fontFamily:'Bebas Neue',fontSize:isMobile?26:30,
+                  padding:isMobile?'10px 4px':'12px 4px',borderRadius:10,
                   background:'var(--surface2)',
                   border:`2px solid ${willBust?'var(--accent)':willWin?'var(--green)':'var(--border)'}`,
                   color:willBust?'var(--accent)':willWin?'var(--green)':'var(--text)',
@@ -602,8 +632,8 @@ function App() {
           </div>
 
           {/* Total & remain indicator */}
-          <div style={{background:'var(--surface2)',borderRadius:10,padding:'10px 14px',
-            display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14,
+          <div style={{background:'var(--surface2)',borderRadius:10,padding:'8px 12px',
+            display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:isMobile?8:14,
             border:`1px solid ${willBust?'var(--accent)':willWin?'var(--green)':'transparent'}`,
             transition:'border-color .2s'}}>
             <div>
@@ -654,14 +684,24 @@ function App() {
         </div>
 
         {/* ── Scoreboard ── */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(175px,1fr))',gap:12}}>
+        <div style={isMobile ? {
+          display:'flex', gap:10, overflowX:'auto',
+          paddingBottom:8, scrollSnapType:'x mandatory',
+        } : {
+          display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(175px,1fr))', gap:12,
+        }}>
           {players.map((p,i)=>{
             const isActive = i===curIdx;
             const avg = p.stats.turns>0?(p.stats.totalPoints/p.stats.turns).toFixed(1):'–';
             return (
               <div key={p.id} className={isActive?'card-on':''} style={{
-                background:'var(--surface)',borderRadius:14,padding:16,
+                background:'var(--surface)',borderRadius:14,
+                padding:isMobile?'14px 12px':16,
                 border:'1px solid var(--border)',transition:'all .25s',position:'relative',
+                ...(isMobile ? {
+                  minWidth: players.length <= 2 ? 'calc(50% - 5px)' : 140,
+                  flexShrink:0, scrollSnapAlign:'start',
+                } : {}),
               }}>
                 {isActive && (
                   <div style={{position:'absolute',top:-12,left:'50%',transform:'translateX(-50%)',
