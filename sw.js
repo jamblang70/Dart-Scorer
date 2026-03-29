@@ -1,4 +1,4 @@
-const CACHE = 'dart-scorer-pro-v1';
+const CACHE = 'dart-scorer-pro-v2';
 const ASSETS = [
   '/',
   '/index.html',
